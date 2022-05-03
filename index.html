@@ -185,6 +185,175 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/WebServer%E7%B1%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="study">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/04/28/WebServer%E7%B1%BB/" class="post-title-link" itemprop="url">WebServer类</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-28 18:37:24" itemprop="dateCreated datePublished" datetime="2022-04-28T18:37:24+08:00">2022-04-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-03 13:23:36" itemprop="dateModified" datetime="2022-05-03T13:23:36+08:00">2022-05-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="WebServer类"><a href="#WebServer类" class="headerlink" title="WebServer类"></a>WebServer类</h1><h2 id="类的成员变量"><a href="#类的成员变量" class="headerlink" title="类的成员变量"></a>类的成员变量</h2><h3 id="数据库相关"><a href="#数据库相关" class="headerlink" title="数据库相关"></a>数据库相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">connection_poll* m_connpool;  <span class="comment">//数据库连接池</span></span><br><span class="line">string m_user;                <span class="comment">//数据库信息:登录名</span></span><br><span class="line">string m_passWord;            <span class="comment">//数据库信息:密码</span></span><br><span class="line">string m_databaseName;        <span class="comment">//数据库信息:库名</span></span><br><span class="line"><span class="type">int</span> m_sql_num;                <span class="comment">//连接池数量</span></span><br></pre></td></tr></table></figure>
+<h3 id="线程池相关"><a href="#线程池相关" class="headerlink" title="线程池相关"></a>线程池相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">threadpool&lt;http_conn&gt;* m_pool; <span class="comment">//线程池</span></span><br><span class="line"><span class="type">int</span> m_thread_num;              <span class="comment">//线程数量</span></span><br></pre></td></tr></table></figure>
+<h3 id="epoll函数相关"><a href="#epoll函数相关" class="headerlink" title="epoll函数相关"></a>epoll函数相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">epoll_event events[MAX_EVENT_NUMBER]; <span class="comment">//epoll调用返回的事件集合</span></span><br><span class="line"><span class="type">int</span> m_epollfd;                        <span class="comment">//epoll文件描述符</span></span><br><span class="line"><span class="type">int</span> m_listenfd;                       <span class="comment">//监听文件描述符</span></span><br><span class="line"><span class="type">int</span> m_OPT_LINGER;                     <span class="comment">//优雅关闭连接</span></span><br><span class="line"><span class="type">int</span> m_LISTENTrigmode;                 <span class="comment">//listenfd触发模式</span></span><br><span class="line"><span class="type">int</span> m_CONNTrigmode;                   <span class="comment">//connfd触发模式</span></span><br></pre></td></tr></table></figure>
+<h3 id="定时器相关"><a href="#定时器相关" class="headerlink" title="定时器相关"></a>定时器相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">client_data* users_timer;  <span class="comment">//定时器资源</span></span><br><span class="line">Utils utils;               <span class="comment">//定时器对象</span></span><br></pre></td></tr></table></figure>
+<h3 id="http解析相关"><a href="#http解析相关" class="headerlink" title="http解析相关"></a>http解析相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_conn* users;  <span class="comment">//http解析对象</span></span><br></pre></td></tr></table></figure>
+<h3 id="其它资源"><a href="#其它资源" class="headerlink" title="其它资源"></a>其它资源</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> m_port;       <span class="comment">//端口号</span></span><br><span class="line"><span class="type">char</span>* m_root;     <span class="comment">//root资源路径</span></span><br><span class="line"><span class="type">int</span> m_log_write;  <span class="comment">//异步日志</span></span><br><span class="line"><span class="type">int</span> m_close_log;  <span class="comment">//关闭日志</span></span><br><span class="line"><span class="type">int</span> m_actormodel; <span class="comment">//工作模式</span></span><br><span class="line"><span class="type">int</span> m_pipefd[<span class="number">2</span>];  <span class="comment">//管道</span></span><br></pre></td></tr></table></figure>
+<h2 id="类的构造、析构函数"><a href="#类的构造、析构函数" class="headerlink" title="类的构造、析构函数"></a>类的构造、析构函数</h2><h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">    WebServer::<span class="built_in">WebServer</span>()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//http_conn类对象，默认最大事件数65536</span></span><br><span class="line">    users = <span class="keyword">new</span> http_conn[MAX_FD];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//root文件夹路径</span></span><br><span class="line">    m_root=<span class="built_in">getcwd</span>(<span class="literal">nullptr</span>,<span class="number">256</span>);</span><br><span class="line">    <span class="built_in">assert</span>(m_root);</span><br><span class="line">    <span class="built_in">strncat</span>(m_root,<span class="string">&quot;/root&quot;</span>,<span class="number">6</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//定时器，默认最大事件数65536</span></span><br><span class="line">    users_timer = <span class="keyword">new</span> client_data[MAX_FD];</span><br><span class="line"></span><br><span class="line">    m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">    m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">    m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">    m_log_write = <span class="number">0</span>;           <span class="comment">//日志模式，默认同步</span></span><br><span class="line">    m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">    m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">    m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">    m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">    m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">    m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">    m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">    m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="析构函数"><a href="#析构函数" class="headerlink" title="析构函数"></a>析构函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    WebServer::~<span class="built_in">WebServer</span>()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">close</span>(m_epollfd);   <span class="comment">//关闭epoll文件描述符</span></span><br><span class="line">    <span class="built_in">close</span>(m_listenfd);  <span class="comment">//关闭监听文件描述符</span></span><br><span class="line">    <span class="built_in">close</span>(m_pipefd[<span class="number">1</span>]); <span class="comment">//关闭管道</span></span><br><span class="line">    <span class="built_in">close</span>(m_pipefd[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">delete</span>[] users;      <span class="comment">//释放http解析资源</span></span><br><span class="line">    <span class="keyword">delete</span>[] users_timer;<span class="comment">//释放定时器资源</span></span><br><span class="line">    <span class="keyword">delete</span> m_pool;       <span class="comment">//释放线程池资源</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="开启日志"><a href="#开启日志" class="headerlink" title="开启日志"></a>开启日志</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="type">void</span> <span class="title">WebServer::log_write</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> == m_close_log)  <span class="comment">//日志未关闭</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">1</span> == m_log_write)</span><br><span class="line">            Log::<span class="built_in">get_instance</span>()-&gt;<span class="built_in">init</span>(<span class="string">&quot;./ServerLog&quot;</span>, m_close_log, <span class="number">2000</span>, <span class="number">800000</span>, <span class="number">800</span>); <span class="comment">//异步</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            Log::<span class="built_in">get_instance</span>()-&gt;<span class="built_in">init</span>(<span class="string">&quot;./ServerLog&quot;</span>, m_close_log, <span class="number">2000</span>, <span class="number">800000</span>, <span class="number">0</span>);   <span class="comment">//同步</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/main%E4%B8%BB%E5%87%BD%E6%95%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="study">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/04/28/main%E4%B8%BB%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">main主函数</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-28 18:37:24" itemprop="dateCreated datePublished" datetime="2022-04-28T18:37:24+08:00">2022-04-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-03 13:22:42" itemprop="dateModified" datetime="2022-05-03T13:22:42+08:00">2022-05-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="webserver项目主函数"><a href="#webserver项目主函数" class="headerlink" title="webserver项目主函数"></a>webserver项目主函数</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">m_log_write = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WebServer server;</span><br></pre></td></tr></table></figure>
+<p>新建WebServer类，通过构造函数初始化变量</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">log_write</span>();</span><br></pre></td></tr></table></figure>
+<p>开启日志</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">sql_pool</span>();</span><br></pre></td></tr></table></figure>
+<p>建立数据库</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">thread_pool</span>();</span><br></pre></td></tr></table></figure>
+<p>建立线程池</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">eventListen</span>();</span><br></pre></td></tr></table></figure>
+<p>建立监听socket套接字</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">eventLoop</span>();</span><br></pre></td></tr></table></figure>
+<p>循环监听连接</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/%E6%97%A5%E5%BF%97%EF%BC%88%E4%B8%8A%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -355,89 +524,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/WebServer%E7%B1%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="study">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/04/28/WebServer%E7%B1%BB/" class="post-title-link" itemprop="url">WebServer类</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-04-28 18:37:24" itemprop="dateCreated datePublished" datetime="2022-04-28T18:37:24+08:00">2022-04-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-03 13:23:36" itemprop="dateModified" datetime="2022-05-03T13:23:36+08:00">2022-05-03</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="WebServer类"><a href="#WebServer类" class="headerlink" title="WebServer类"></a>WebServer类</h1><h2 id="类的成员变量"><a href="#类的成员变量" class="headerlink" title="类的成员变量"></a>类的成员变量</h2><h3 id="数据库相关"><a href="#数据库相关" class="headerlink" title="数据库相关"></a>数据库相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">connection_poll* m_connpool;  <span class="comment">//数据库连接池</span></span><br><span class="line">string m_user;                <span class="comment">//数据库信息:登录名</span></span><br><span class="line">string m_passWord;            <span class="comment">//数据库信息:密码</span></span><br><span class="line">string m_databaseName;        <span class="comment">//数据库信息:库名</span></span><br><span class="line"><span class="type">int</span> m_sql_num;                <span class="comment">//连接池数量</span></span><br></pre></td></tr></table></figure>
-<h3 id="线程池相关"><a href="#线程池相关" class="headerlink" title="线程池相关"></a>线程池相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">threadpool&lt;http_conn&gt;* m_pool; <span class="comment">//线程池</span></span><br><span class="line"><span class="type">int</span> m_thread_num;              <span class="comment">//线程数量</span></span><br></pre></td></tr></table></figure>
-<h3 id="epoll函数相关"><a href="#epoll函数相关" class="headerlink" title="epoll函数相关"></a>epoll函数相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">epoll_event events[MAX_EVENT_NUMBER]; <span class="comment">//epoll调用返回的事件集合</span></span><br><span class="line"><span class="type">int</span> m_epollfd;                        <span class="comment">//epoll文件描述符</span></span><br><span class="line"><span class="type">int</span> m_listenfd;                       <span class="comment">//监听文件描述符</span></span><br><span class="line"><span class="type">int</span> m_OPT_LINGER;                     <span class="comment">//优雅关闭连接</span></span><br><span class="line"><span class="type">int</span> m_LISTENTrigmode;                 <span class="comment">//listenfd触发模式</span></span><br><span class="line"><span class="type">int</span> m_CONNTrigmode;                   <span class="comment">//connfd触发模式</span></span><br></pre></td></tr></table></figure>
-<h3 id="定时器相关"><a href="#定时器相关" class="headerlink" title="定时器相关"></a>定时器相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">client_data* users_timer;  <span class="comment">//定时器资源</span></span><br><span class="line">Utils utils;               <span class="comment">//定时器对象</span></span><br></pre></td></tr></table></figure>
-<h3 id="http解析相关"><a href="#http解析相关" class="headerlink" title="http解析相关"></a>http解析相关</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http_conn* users;  <span class="comment">//http解析对象</span></span><br></pre></td></tr></table></figure>
-<h3 id="其它资源"><a href="#其它资源" class="headerlink" title="其它资源"></a>其它资源</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> m_port;       <span class="comment">//端口号</span></span><br><span class="line"><span class="type">char</span>* m_root;     <span class="comment">//root资源路径</span></span><br><span class="line"><span class="type">int</span> m_log_write;  <span class="comment">//异步日志</span></span><br><span class="line"><span class="type">int</span> m_close_log;  <span class="comment">//关闭日志</span></span><br><span class="line"><span class="type">int</span> m_actormodel; <span class="comment">//工作模式</span></span><br><span class="line"><span class="type">int</span> m_pipefd[<span class="number">2</span>];  <span class="comment">//管道</span></span><br></pre></td></tr></table></figure>
-<h2 id="类的构造、析构函数"><a href="#类的构造、析构函数" class="headerlink" title="类的构造、析构函数"></a>类的构造、析构函数</h2><h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">    WebServer::<span class="built_in">WebServer</span>()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//http_conn类对象，默认最大事件数65536</span></span><br><span class="line">    users = <span class="keyword">new</span> http_conn[MAX_FD];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//root文件夹路径</span></span><br><span class="line">    m_root=<span class="built_in">getcwd</span>(<span class="literal">nullptr</span>,<span class="number">256</span>);</span><br><span class="line">    <span class="built_in">assert</span>(m_root);</span><br><span class="line">    <span class="built_in">strncat</span>(m_root,<span class="string">&quot;/root&quot;</span>,<span class="number">6</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//定时器，默认最大事件数65536</span></span><br><span class="line">    users_timer = <span class="keyword">new</span> client_data[MAX_FD];</span><br><span class="line"></span><br><span class="line">    m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">    m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">    m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">    m_log_write = <span class="number">0</span>;           <span class="comment">//日志模式，默认同步</span></span><br><span class="line">    m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">    m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">    m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">    m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">    m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">    m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">    m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">    m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="析构函数"><a href="#析构函数" class="headerlink" title="析构函数"></a>析构函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    WebServer::~<span class="built_in">WebServer</span>()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">close</span>(m_epollfd);   <span class="comment">//关闭epoll文件描述符</span></span><br><span class="line">    <span class="built_in">close</span>(m_listenfd);  <span class="comment">//关闭监听文件描述符</span></span><br><span class="line">    <span class="built_in">close</span>(m_pipefd[<span class="number">1</span>]); <span class="comment">//关闭管道</span></span><br><span class="line">    <span class="built_in">close</span>(m_pipefd[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">delete</span>[] users;      <span class="comment">//释放http解析资源</span></span><br><span class="line">    <span class="keyword">delete</span>[] users_timer;<span class="comment">//释放定时器资源</span></span><br><span class="line">    <span class="keyword">delete</span> m_pool;       <span class="comment">//释放线程池资源</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="开启日志"><a href="#开启日志" class="headerlink" title="开启日志"></a>开启日志</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="type">void</span> <span class="title">WebServer::log_write</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> == m_close_log)  <span class="comment">//日志未关闭</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">1</span> == m_log_write)</span><br><span class="line">            Log::<span class="built_in">get_instance</span>()-&gt;<span class="built_in">init</span>(<span class="string">&quot;./ServerLog&quot;</span>, m_close_log, <span class="number">2000</span>, <span class="number">800000</span>, <span class="number">800</span>); <span class="comment">//异步</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            Log::<span class="built_in">get_instance</span>()-&gt;<span class="built_in">init</span>(<span class="string">&quot;./ServerLog&quot;</span>, m_close_log, <span class="number">2000</span>, <span class="number">800000</span>, <span class="number">0</span>);   <span class="comment">//同步</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/%E8%87%AA%E5%B0%81%E8%A3%85%E9%94%81%E7%B1%BB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -526,92 +612,6 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_cond_broadcast</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>函数唤醒所有被pthread_cond_wait函数阻塞在某个条件变量上的线程，参数cond被用来指定这个条件变量。<br>###具体实现</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">cond</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">pthread_cond_t</span> m_cond;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">cond</span>() </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">pthread_cond_init</span>(&amp;m_cond,<span class="literal">NULL</span>)!=<span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    ~<span class="built_in">cond</span>() </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">pthread_cond_destroy</span>(&amp;m_cond);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">wait</span><span class="params">(<span class="type">pthread_mutex_t</span>* m_mutex)</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="type">int</span> ret=<span class="built_in">pthread_cond_wait</span>(&amp;m_cond,m_mutex);</span><br><span class="line">        <span class="keyword">return</span> ret==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">timewait</span><span class="params">(<span class="type">pthread_mutex_t</span>* m_mutex,<span class="keyword">struct</span> timespec t)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="type">int</span> ret=<span class="built_in">pthread_cond_timedwait</span>(&amp;m_cond,m_mutex,&amp;t);</span><br><span class="line">        <span class="keyword">return</span> ret==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">signal</span><span class="params">()</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">pthread_cond_signal</span>(&amp;m_cond)==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">broadcast</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">pthread_cond_broadcast</span>(&amp;m_cond)==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/main%E4%B8%BB%E5%87%BD%E6%95%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="study">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/04/28/main%E4%B8%BB%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">main主函数</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-04-28 18:37:24" itemprop="dateCreated datePublished" datetime="2022-04-28T18:37:24+08:00">2022-04-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-03 13:22:42" itemprop="dateModified" datetime="2022-05-03T13:22:42+08:00">2022-05-03</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="webserver项目主函数"><a href="#webserver项目主函数" class="headerlink" title="webserver项目主函数"></a>webserver项目主函数</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">m_log_write = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WebServer server;</span><br></pre></td></tr></table></figure>
-<p>新建WebServer类，通过构造函数初始化变量</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">log_write</span>();</span><br></pre></td></tr></table></figure>
-<p>开启日志</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">sql_pool</span>();</span><br></pre></td></tr></table></figure>
-<p>建立数据库</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">thread_pool</span>();</span><br></pre></td></tr></table></figure>
-<p>建立线程池</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">eventListen</span>();</span><br></pre></td></tr></table></figure>
-<p>建立监听socket套接字</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">server.<span class="built_in">eventLoop</span>();</span><br></pre></td></tr></table></figure>
-<p>循环监听连接</p>
-
       
     </div>
 
