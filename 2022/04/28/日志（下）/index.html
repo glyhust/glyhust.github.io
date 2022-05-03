@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="日志系统（下）流程图日志类的成员变量、函数成员变量123456789101112char dir_name[128];   &#x2F;&#x2F;路径名char log_name[128];   &#x2F;&#x2F;log文件名int m_split_line;     &#x2F;&#x2F;日志最大行数int m_log_buf_size;   &#x2F;&#x2F;日志缓冲区大小long long m_count;    &#x2F;&#x2F;日志行数记录int m_today;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="日志系统（下）">
+<meta property="og:url" content="http://example.com/2022/04/28/%E6%97%A5%E5%BF%97%EF%BC%88%E4%B8%8B%EF%BC%89/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="日志系统（下）流程图日志类的成员变量、函数成员变量123456789101112char dir_name[128];   &#x2F;&#x2F;路径名char log_name[128];   &#x2F;&#x2F;log文件名int m_split_line;     &#x2F;&#x2F;日志最大行数int m_log_buf_size;   &#x2F;&#x2F;日志缓冲区大小long long m_count;    &#x2F;&#x2F;日志行数记录int m_today;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-28T10:37:24.000Z">
+<meta property="article:modified_time" content="2022-05-03T05:24:27.577Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="-学习日志">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2022/04/28/%E6%97%A5%E5%BF%97%EF%BC%88%E4%B8%8B%EF%BC%89/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>日志系统（下） | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/%E6%97%A5%E5%BF%97%EF%BC%88%E4%B8%8B%EF%BC%89/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="study">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          日志系统（下）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-28 18:37:24" itemprop="dateCreated datePublished" datetime="2022-04-28T18:37:24+08:00">2022-04-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-03 13:24:27" itemprop="dateModified" datetime="2022-05-03T13:24:27+08:00">2022-05-03</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="日志系统（下）"><a href="#日志系统（下）" class="headerlink" title="日志系统（下）"></a>日志系统（下）</h1><h2 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h2><h2 id="日志类的成员变量、函数"><a href="#日志类的成员变量、函数" class="headerlink" title="日志类的成员变量、函数"></a>日志类的成员变量、函数</h2><h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> dir_name[<span class="number">128</span>];   <span class="comment">//路径名</span></span><br><span class="line"><span class="type">char</span> log_name[<span class="number">128</span>];   <span class="comment">//log文件名</span></span><br><span class="line"><span class="type">int</span> m_split_line;     <span class="comment">//日志最大行数</span></span><br><span class="line"><span class="type">int</span> m_log_buf_size;   <span class="comment">//日志缓冲区大小</span></span><br><span class="line"><span class="type">long</span> <span class="type">long</span> m_count;    <span class="comment">//日志行数记录</span></span><br><span class="line"><span class="type">int</span> m_today;          <span class="comment">//按天分文件，记录当前时间是哪一天</span></span><br><span class="line">FILE* m_fp;           <span class="comment">//打开log的文件指针</span></span><br><span class="line"><span class="type">char</span>* m_buf;          <span class="comment">//要输出的内容</span></span><br><span class="line">block_queue&lt;string&gt;* m_log_queue;  <span class="comment">//阻塞队列</span></span><br><span class="line"><span class="type">bool</span> m_is_asyns;      <span class="comment">//是否同步标志位</span></span><br><span class="line">locker m_mutex;       <span class="comment">//同步类</span></span><br><span class="line"><span class="type">int</span> m_close_log;      <span class="comment">//关闭日志</span></span><br></pre></td></tr></table></figure>
+<h3 id="日志类对象的初始化"><a href="#日志类对象的初始化" class="headerlink" title="日志类对象的初始化"></a>日志类对象的初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">Log::init</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* file_name,<span class="type">int</span> close_log,<span class="type">int</span> log_buf_size,<span class="type">int</span> split_lines,<span class="type">int</span> max_queue_size)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(max_queue_size&gt;=<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        m_is_asyns=<span class="literal">true</span>;</span><br><span class="line">        m_log_queue=<span class="keyword">new</span> <span class="built_in">block_queue</span>&lt;string&gt;(max_queue_size);</span><br><span class="line">        <span class="type">pthread_t</span> tid;</span><br><span class="line">        <span class="built_in">pthread_create</span>(&amp;tid,<span class="literal">NULL</span>,flush_log_thread,<span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    m_close_log=close_log;</span><br><span class="line">    m_log_buf_size=log_buf_size;</span><br><span class="line">    m_buf=<span class="keyword">new</span> <span class="type">char</span>[m_log_buf_size];</span><br><span class="line">    <span class="built_in">memset</span>(m_buf,<span class="string">&#x27;\0&#x27;</span>,m_log_buf_size);</span><br><span class="line">    m_split_line=split_lines;</span><br><span class="line">    <span class="type">time_t</span> t=<span class="built_in">time</span>(<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">tm</span>* sys_tm=<span class="built_in">localtime</span>(&amp;t);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">tm</span> my_tm=*sys_tm;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span>* p=<span class="built_in">strrchr</span>(file_name,<span class="string">&#x27;/&#x27;</span>);</span><br><span class="line">    <span class="type">char</span> log_full_name[<span class="number">256</span>]=&#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">if</span>(p==<span class="literal">NULL</span>)</span><br><span class="line">        <span class="built_in">snprintf</span>(log_full_name,<span class="number">255</span>,<span class="string">&quot;%d_%02d_%02d_%s&quot;</span>,my_tm.tm_year+<span class="number">1900</span>,my_tm.tm_mon+<span class="number">1</span>,my_tm.tm_mday,file_name);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">strcpy</span>(log_name,p+<span class="number">1</span>);</span><br><span class="line">        <span class="built_in">strncpy</span>(dir_name,file_name,p-file_name+<span class="number">1</span>);</span><br><span class="line">        <span class="built_in">snprintf</span>(log_full_name,<span class="number">255</span>,<span class="string">&quot;%s%d_%02d_%02d_%s&quot;</span>,dir_name,my_tm.tm_year+<span class="number">1900</span>,my_tm.tm_mon+<span class="number">1</span>,my_tm.tm_mday,log_name);</span><br><span class="line">    &#125;</span><br><span class="line">    m_today=my_tm.tm_mday;</span><br><span class="line">    m_fp=<span class="built_in">fopen</span>(log_full_name,<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span>(m_fp==<span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>max_queue_size为阻塞队列的长度，如果不为0，表示使用异步日志模式，此时设置m_is_asyns标志为true，生成指定大小的阻塞队列，创建线程，调用flush_log_thread回调函数，表示创建线程异步写日志。如果为0，表示使用同步日志模式。同时初始化log文件名、日志最大行数、日志缓冲区大小。</p>
+<h3 id="异步日志公有方法"><a href="#异步日志公有方法" class="headerlink" title="异步日志公有方法"></a>异步日志公有方法</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="title">flush_log_thread</span><span class="params">(<span class="type">void</span>* args)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Log::<span class="built_in">get_instance</span>()-&gt;<span class="built_in">async_write_log</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用私有方法async_write_log。</p>
+<h3 id="异步日志私有方法"><a href="#异步日志私有方法" class="headerlink" title="异步日志私有方法"></a>异步日志私有方法</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* <span class="title">async_write_log</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    string single_log;</span><br><span class="line">    <span class="keyword">while</span>(m_log_queue-&gt;<span class="built_in">pop</span>(single_log))</span><br><span class="line">    &#123;</span><br><span class="line">        m_mutex.<span class="built_in">lock</span>();</span><br><span class="line">        <span class="built_in">fputs</span>(single_log.<span class="built_in">c_str</span>(),m_fp);</span><br><span class="line">        m_mutex.<span class="built_in">unlock</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从阻塞队列中取出一条日志内容，写入文件，当阻塞队列为空时，线程阻塞等待，直到有新日志插入，唤醒线程。</p>
+<h3 id="用于其它文件中使用的日志写宏定义"><a href="#用于其它文件中使用的日志写宏定义" class="headerlink" title="用于其它文件中使用的日志写宏定义"></a>用于其它文件中使用的日志写宏定义</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> LOG_DEBUG(format, ...) <span class="keyword">if</span>(m_close_log==0) &#123;Log::get_instance()-&gt;write_log(0,format,##__VA_ARGS__); Log::get_instance()-&gt;flush();&#125;</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LOG_INFO(format, ...)  <span class="keyword">if</span>(m_close_log==0) &#123;Log::get_instance()-&gt;write_log(1,format,##__VA_ARGS__); Log::get_instance()-&gt;flush();&#125;</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LOG_WARN(format, ...)  <span class="keyword">if</span>(m_close_log==0) &#123;Log::get_instance()-&gt;write_log(2,format,##__VA_ARGS__); Log::get_instance()-&gt;flush();&#125;</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> LOG_ERROR(format, ...) <span class="keyword">if</span>(m_close_log==0) &#123;Log::get_instance()-&gt;write_log(3,format,##__VA_ARGS__); Log::get_instance()-&gt;flush();&#125;</span></span><br></pre></td></tr></table></figure>
+<p>定义四个宏，用于在其它文件中进行日志写操作，其中m_close_log&#x3D;&#x3D;0表示日志未关闭，get_instance函数为通过单例模式实现的日志类对象，write_log函数为写日志的具体逻辑实现，flush函数为刷新写缓冲区。</p>
+<h3 id="单例模式的日志类对象实现函数"><a href="#单例模式的日志类对象实现函数" class="headerlink" title="单例模式的日志类对象实现函数"></a>单例模式的日志类对象实现函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> Log* <span class="title">get_instance</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">static</span> Log instance;</span><br><span class="line">    <span class="keyword">return</span> &amp;instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="日志写的逻辑实现"><a href="#日志写的逻辑实现" class="headerlink" title="日志写的逻辑实现"></a>日志写的逻辑实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Log::write_log</span><span class="params">(<span class="type">int</span> level,<span class="type">const</span> <span class="type">char</span>* format, ...)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">timeval</span> now=&#123;<span class="number">0</span>,<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="built_in">gettimeofday</span>(&amp;now,<span class="literal">NULL</span>);</span><br><span class="line">    <span class="type">time_t</span> t=now.tv_sec;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">tm</span>* sys_tm=<span class="built_in">localtime</span>(&amp;t);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">tm</span> my_tm=*sys_tm;</span><br><span class="line">    <span class="type">char</span> s[<span class="number">16</span>]=&#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">switch</span>(level)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">            <span class="built_in">strcpy</span>(s,<span class="string">&quot;[debug]:&quot;</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            <span class="built_in">strcpy</span>(s,<span class="string">&quot;[info]:&quot;</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">            <span class="built_in">strcpy</span>(s,<span class="string">&quot;[warn]:&quot;</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            <span class="built_in">strcpy</span>(s,<span class="string">&quot;[erro]:&quot;</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="built_in">strcpy</span>(s,<span class="string">&quot;[info]:&quot;</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    m_mutex.<span class="built_in">lock</span>();</span><br><span class="line">    m_count++;</span><br><span class="line">    <span class="keyword">if</span>(m_today!=my_tm.tm_mday||m_count%m_split_line==<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">char</span> new_log[<span class="number">256</span>]=&#123;<span class="number">0</span>&#125;;</span><br><span class="line">        <span class="built_in">fflush</span>(m_fp);</span><br><span class="line">        <span class="built_in">fclose</span>(m_fp);</span><br><span class="line">        <span class="type">char</span> tail[<span class="number">16</span>]=&#123;<span class="number">0</span>&#125;;</span><br><span class="line">        <span class="built_in">snprintf</span>(tail,<span class="number">16</span>,<span class="string">&quot;%d_%02d_%02d_&quot;</span>,my_tm.tm_year+<span class="number">1900</span>,my_tm.tm_mon+<span class="number">1</span>,my_tm.tm_mday);</span><br><span class="line">        <span class="keyword">if</span>(m_today!=my_tm.tm_mday)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">snprintf</span>(new_log,<span class="number">255</span>,<span class="string">&quot;%s%s%s&quot;</span>,dir_name,tail,log_name);</span><br><span class="line">            m_today=my_tm.tm_mday;</span><br><span class="line">            m_count=<span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="built_in">snprintf</span>(new_log,<span class="number">255</span>,<span class="string">&quot;%s%s%s.%lld&quot;</span>,dir_name,tail,log_name,m_count/m_split_line);</span><br><span class="line">        m_fp=<span class="built_in">fopen</span>(new_log,<span class="string">&quot;a&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    m_mutex.<span class="built_in">unlock</span>();</span><br><span class="line">    va_list valst;</span><br><span class="line">    <span class="built_in">va_start</span>(valst,format);</span><br><span class="line">    string log_str;</span><br><span class="line">    m_mutex.<span class="built_in">lock</span>();</span><br><span class="line">    <span class="type">int</span> n=<span class="built_in">snprintf</span>(m_buf,<span class="number">48</span>,<span class="string">&quot;%d-%02d-%02d %02d:%02d:%02d.%06ld %s&quot;</span>,</span><br><span class="line">                    my_tm.tm_year+<span class="number">1900</span>,my_tm.tm_mon+<span class="number">1</span>,my_tm.tm_mday,</span><br><span class="line">                    my_tm.tm_hour,my_tm.tm_min,my_tm.tm_sec,now.tv_usec,s); </span><br><span class="line">    <span class="type">int</span> m=<span class="built_in">vsnprintf</span>(m_buf+n,m_log_buf_size<span class="number">-1</span>,format,valst);</span><br><span class="line">    m_buf[n+m]=<span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    m_buf[n+m+<span class="number">1</span>]=<span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">    log_str=m_buf;</span><br><span class="line">    m_mutex.<span class="built_in">unlock</span>();</span><br><span class="line">    <span class="keyword">if</span>(m_is_asyns&amp;&amp;!m_log_queue-&gt;<span class="built_in">full</span>())</span><br><span class="line">        m_log_queue-&gt;<span class="built_in">push</span>(log_str);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        m_mutex.<span class="built_in">lock</span>();</span><br><span class="line">        <span class="built_in">fputs</span>(log_str.<span class="built_in">c_str</span>(),m_fp);</span><br><span class="line">        m_mutex.<span class="built_in">unlock</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">va_end</span>(valst);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>level参数表示日志的分级，0——debug：调试代码的输出，在系统实际运行时，一般不使用；1——info：报告系统当前的状态，当前执行的流程或接收的信息；2——warn：这种警告与调试时终端的warning类似，同样是调试代码时使用；3——error：这种警告与调试时终端的warning类似，同样是调试代码时使用。日志写入前会判断当前day是否为创建日志的时间，行数是否超过最大行限制。若为创建日志时间，写入日志，否者按当前时间创建新log，更新创建时间和行数，若行数超过最大行限制，在当前日志的末尾加count&#x2F;max_lines为后缀创建新log。通过m_is_asyns标识判断异步&#x2F;同步日志，异步则将日志信息加入阻塞队列，同步则加锁向文件中写。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/" rel="tag"># -学习日志</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/28/%E8%87%AA%E5%B0%81%E8%A3%85%E9%94%81%E7%B1%BB/" rel="prev" title="自封装锁类">
+      <i class="fa fa-chevron-left"></i> 自封装锁类
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/28/%E6%97%A5%E5%BF%97%EF%BC%88%E4%B8%8A%EF%BC%89/" rel="next" title="日志系统（上）">
+      日志系统（上） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B8%8B%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">日志系统（下）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="nav-number">1.1.</span> <span class="nav-text">流程图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E7%B1%BB%E7%9A%84%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E3%80%81%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">日志类的成员变量、函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F"><span class="nav-number">1.2.1.</span> <span class="nav-text">成员变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E7%B1%BB%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">1.2.2.</span> <span class="nav-text">日志类对象的初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E6%97%A5%E5%BF%97%E5%85%AC%E6%9C%89%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.3.</span> <span class="nav-text">异步日志公有方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E6%97%A5%E5%BF%97%E7%A7%81%E6%9C%89%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.4.</span> <span class="nav-text">异步日志私有方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E4%BA%8E%E5%85%B6%E5%AE%83%E6%96%87%E4%BB%B6%E4%B8%AD%E4%BD%BF%E7%94%A8%E7%9A%84%E6%97%A5%E5%BF%97%E5%86%99%E5%AE%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">1.2.5.</span> <span class="nav-text">用于其它文件中使用的日志写宏定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E7%9A%84%E6%97%A5%E5%BF%97%E7%B1%BB%E5%AF%B9%E8%B1%A1%E5%AE%9E%E7%8E%B0%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.6.</span> <span class="nav-text">单例模式的日志类对象实现函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E5%86%99%E7%9A%84%E9%80%BB%E8%BE%91%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.2.7.</span> <span class="nav-text">日志写的逻辑实现</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description">study</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+</div>
+
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
