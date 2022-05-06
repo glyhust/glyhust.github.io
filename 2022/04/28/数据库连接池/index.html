@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="整体概述池是一种资源的容器，有多种实现方法，如数组、链表、队列等，本项目使用单例模式和链表创建数据库连接池，实现对数据库连接资源的复用。数据库模块可以分为两部分，其一是数据库连接池的定义和初始化，其二是利用连接池完成登录和注册的校验功能。具体而言，工作线程从数据库连接池取得一个连接，访问数据库中的数据，访问完毕后将连接交还给连接池。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据库连接池">
+<meta property="og:url" content="http://example.com/2022/04/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/index.html">
+<meta property="og:site_name" content="gly的学习博客">
+<meta property="og:description" content="整体概述池是一种资源的容器，有多种实现方法，如数组、链表、队列等，本项目使用单例模式和链表创建数据库连接池，实现对数据库连接资源的复用。数据库模块可以分为两部分，其一是数据库连接池的定义和初始化，其二是利用连接池完成登录和注册的校验功能。具体而言，工作线程从数据库连接池取得一个连接，访问数据库中的数据，访问完毕后将连接交还给连接池。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/06/OKboPf.png">
+<meta property="article:published_time" content="2022-04-28T10:37:24.000Z">
+<meta property="article:modified_time" content="2022-05-06T15:43:25.159Z">
+<meta property="article:author" content="gong luyang">
+<meta property="article:tag" content="-学习日志">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/05/06/OKboPf.png">
+
+<link rel="canonical" href="http://example.com/2022/04/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据库连接池 | gly的学习博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gly的学习博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">既是学习记录 又是技术分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
+      <meta itemprop="name" content="gong luyang">
+      <meta itemprop="description" content="learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gly的学习博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据库连接池
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-28 18:37:24" itemprop="dateCreated datePublished" datetime="2022-04-28T18:37:24+08:00">2022-04-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-06 23:43:25" itemprop="dateModified" datetime="2022-05-06T23:43:25+08:00">2022-05-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>池是一种资源的容器，有多种实现方法，如数组、链表、队列等，本项目使用单例模式和链表创建数据库连接池，实现对数据库连接资源的复用。数据库模块可以分为两部分，其一是数据库连接池的定义和初始化，其二是利用连接池完成登录和注册的校验功能。具体而言，工作线程从数据库连接池取得一个连接，访问数据库中的数据，访问完毕后将连接交还给连接池。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/OKboPf"><img src="https://s1.ax1x.com/2022/05/06/OKboPf.png" alt="数据库连接池"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p><strong>数据库访问流程</strong>：当系统需要访问数据库时，首先创建数据库连接，完成数据库操作后，再断开数据库连接。<br><strong>数据库连接池</strong>：池是一组资源的集合，在服务器启动之初就被完全创建好并初始化。数据库连接池中的资源就是一组数据库连接，由系统动态地对池中的连接进行使用和释放。当系统开始处理客户请求时，如果它需要相关的资源，可以直接从池中获取，无需动态分配。当服务器处理完一个客户连接后，可以把相关的资源放回池中，无需执行系统调用释放资源。<br><strong>连接池的必要性</strong>：如果系统需要频繁访问数据库，则需要频繁创建和断开数据库连接，而这是一个很消耗资源的操作，也容易对数据库造成安全隐患。如果在程序初始化的时候，集中创建多个数据库连接，并把它们集中管理，供程序使用，可以保证较快的数据库读写速度，更加安全可靠。</p>
+<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="mysql-init函数"><a href="#mysql-init函数" class="headerlink" title="mysql_init函数"></a>mysql_init函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">MYSQL* <span class="title">mysql_init</span><span class="params">(MYSQL *mysql)</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：分配或初始化与mysql_real_connect()相适应的MYSQL对象，如果mysql_init()分配了新的对象，应当在程序中调用mysql_close()来关闭连接，以释放对象；</li>
+<li>参数：如果mysql是NULL指针，该函数将分配、初始化、并返回新对象。否则，将初始化对象，并返回对象的地址；</li>
+<li>返回值：初始化的MYSQL*句柄，如果无足够内存以分配新的对象，返回NULL错误，在内存不足的情况下，返回NULL；<h3 id="mysql-close函数"><a href="#mysql-close函数" class="headerlink" title="mysql_close函数"></a>mysql_close函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">mysql_close</span><span class="params">(MYSQL *mysql)</span> </span></span><br></pre></td></tr></table></figure></li>
+<li>关闭前面打开的连接，如果句柄是由mysql_init()或mysql_connect()自动分配的，mysql_close()还将解除分配由mysql指向的连接句柄。<h3 id="mysql-real-connect函数"><a href="#mysql-real-connect函数" class="headerlink" title="mysql_real_connect函数"></a>mysql_real_connect函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">MYSQL* <span class="title">mysql_real_connect</span><span class="params">(MYSQL *mysql, <span class="type">const</span> <span class="type">char</span> *host, <span class="type">const</span> <span class="type">char</span> *user, <span class="type">const</span> <span class="type">char</span> *passwd, <span class="type">const</span> <span class="type">char</span> *db, </span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">unsigned</span> <span class="type">int</span> port, <span class="type">const</span> <span class="type">char</span> *unix_socket, <span class="type">unsigned</span> <span class="type">long</span> client_flag)</span> </span></span><br></pre></td></tr></table></figure></li>
+<li>作用：连接数据库引擎，尝试与运行在主机上的MySQL数据库引擎建立连接；</li>
+<li>参数：<ul>
+<li>mysql：MYSQL变量；</li>
+<li>host：MYSQL服务器的地址，如果“host”是NULL或字符串”localhost”，连接将被视为与本地主机的连接；</li>
+<li>user：登录用户名，如果“user”是NULL或空字符串””，用户将被视为当前用户；</li>
+<li>passwd：登录密码；</li>
+<li>db：要连接的数据库，如果db为NULL，连接会将默认的数据库设为该值；</li>
+<li>port：MYSQL服务器的TCP服务端口；</li>
+<li>unix_socket：unix连接方式，如果unix_socket不是NULL，该字符串描述了应使用的套接字或命名管道；</li>
+<li>clientflag：Mysql运行为ODBC数据库的标记，一般取0；</li>
+</ul>
+</li>
+<li>返回值：如果连接成功，返回MYSQL*连接句柄。如果连接失败，返回NULL。对于成功的连接，返回值与第1个参数的值相同。<h3 id="mysql-query函数"><a href="#mysql-query函数" class="headerlink" title="mysql_query函数"></a>mysql_query函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">mysql_query</span><span class="params">(MYSQL *mysql, <span class="type">const</span> <span class="type">char</span> *query)</span> </span></span><br></pre></td></tr></table></figure></li>
+<li>作用：查询数据库中的某一个表内容；</li>
+<li>参数：<ul>
+<li>mysql：MYSQL变量；</li>
+<li>query：由“Null终结的字符串”查询指向的SQL查询，正常情况下，字符串必须包含1条SQL语句，而且不应为语句添加终结分号（‘;’）或“\g”，如果允许多语句执行，字符串可包含多条由分号隔开的语句。mysql_query()不能用于包含二进制数据的查询，应使用mysql_real_query()取而代之（二进制数据可能包含字符‘\0’，mysql_query()会将该字符解释为查询字符串结束），如果希望了解查询是否应返回结果集，可使用mysql_field_count()进行检查。</li>
+</ul>
+</li>
+<li>返回值：如果查询成功，返回0。如果出现错误，返回非0值；<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">mysql_real_query</span><span class="params">(MYSQL *mysql, <span class="type">const</span> <span class="type">char</span> *q, <span class="type">unsigned</span> <span class="type">long</span> length)</span></span></span><br></pre></td></tr></table></figure></li>
+<li>作用：查询数据库中的某一个表内容；</li>
+<li>参数：<ul>
+<li>mysql：MYSQL变量；</li>
+<li>q：SQL查询语句；</li>
+<li>length：查询语句的长度；</li>
+</ul>
+</li>
+<li>返回值：如果查询成功，返回0。如果出现错误，返回非0值；<h3 id="mysql-store-result函数"><a href="#mysql-store-result函数" class="headerlink" title="mysql_store_result函数"></a>mysql_store_result函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">MYSQL_RES* <span class="title">mysql_store_result</span><span class="params">(MYSQL *mysql)</span> </span></span><br></pre></td></tr></table></figure></li>
+<li>作用：显示查询数据库中数据表的内容；</li>
+<li>说明：<ul>
+<li>对于成功检索了数据的每个查询（SELECT、SHOW、DESCRIBE、EXPLAIN、CHECK TABLE等），必须调用mysql_store_result()或mysql_use_result()；</li>
+<li>如果希望了解查询是否应返回结果集，可使用mysql_field_count()进行检查；</li>
+<li>如果查询未返回结果集，mysql_store_result()将返回Null指针（例如，如果查询是INSERT语句）；</li>
+<li>如果读取结果集失败，mysql_store_result()还会返回Null指针；</li>
+<li>一旦调用了mysql_store_result()并获得了不是Null指针的结果，可调用mysql_num_rows()来找出结果集中的行数；</li>
+<li>可以调用mysql_fetch_row()来获取结果集中的行，或调用mysql_row_seek()和mysql_row_tell()来获取或设置结果集中的当前行位置；</li>
+<li>一旦完成了对结果集的操作，必须调用mysql_free_result()；</li>
+</ul>
+</li>
+<li>返回值：具有多个结果的MYSQL_RES结果集合，如果出现错误，返回NULL；<h3 id="mysql-fetch-row函数"><a href="#mysql-fetch-row函数" class="headerlink" title="mysql_fetch_row函数"></a>mysql_fetch_row函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">MYSQL_ROW <span class="title">mysql_fetch_row</span><span class="params">(MYSQL_RES* result)</span></span></span><br></pre></td></tr></table></figure></li>
+<li>作用：从结果集中获取下一行；</li>
+<li>说明：<ul>
+<li>在mysql_store_result()之后使用时，如果没有要检索的行，mysql_fetch_row()返回NULL；</li>
+<li>在mysql_use_result()之后使用时，如果没有要检索的行或出现了错误，mysql_fetch_row()返回NULL；</li>
+<li>行内值的数目由mysql_num_fields(result)给出。如果行中保存了调用mysql_fetch_row()返回的值，将按照row[0]到row[mysql_num_fields(result)-1]，访问这些值的指针；</li>
+<li>可以通过调用mysql_fetch_lengths()来获得行中字段值的长度。对于空字段以及包含NULL的字段，长度为0。通过检查字段值的指针，能够区分它们。如果指针为NULL，字段为NULL，否则字段为空；</li>
+</ul>
+</li>
+<li>返回值：下一行的MYSQL_ROW结构。如果没有更多要检索的行或出现了错误，返回NULL；<h3 id="mysql-field-count函数"><a href="#mysql-field-count函数" class="headerlink" title="mysql_field_count函数"></a>mysql_field_count函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">unsigned</span> <span class="type">int</span> <span class="title">mysql_field_count</span><span class="params">(MYSQL *mysql)</span> </span></span><br></pre></td></tr></table></figure></li>
+<li>作用：返回作用在连接上的最近查询的列数；</li>
+<li>说明：该函数的正常使用是在mysql_store_result()返回NULL（因而没有结果集指针）时。在这种情况下，可调用mysql_field_count()来判定mysql_store_result()是否应生成非空结果。这样，客户端就能采取恰当的动作，而无需知道查询是否是SELECT（或类似SELECT的）语句；</li>
+<li>返回值：表示结果集中列数的无符号整数；<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">string m_url;           <span class="comment">//主机地址</span></span><br><span class="line">string m_Port;          <span class="comment">//数据库端口号</span></span><br><span class="line">string m_User;          <span class="comment">//登录数据库用户名</span></span><br><span class="line">string m_Password;      <span class="comment">//登录数据库密码</span></span><br><span class="line">string m_Databasename;  <span class="comment">//使用数据库名</span></span><br><span class="line"><span class="type">int</span> m_close_log;        <span class="comment">//日志开关</span></span><br><span class="line">locker lock;</span><br><span class="line">list&lt;MYSQL*&gt; connList;  <span class="comment">//连接池</span></span><br><span class="line">sem reserve;</span><br><span class="line"><span class="type">int</span> m_MaxConn;          <span class="comment">//最大连接数</span></span><br><span class="line"><span class="type">int</span> m_CurConn;          <span class="comment">//当前已使用的连接数</span></span><br><span class="line"><span class="type">int</span> m_FreeConn;         <span class="comment">//当前空闲的连接数</span></span><br></pre></td></tr></table></figure>
+<h3 id="RAII机制创建、释放资源"><a href="#RAII机制创建、释放资源" class="headerlink" title="RAII机制创建、释放资源"></a>RAII机制创建、释放资源</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">connectionRAII::<span class="built_in">connectionRAII</span>(MYSQL** SQL,connection_poll* connpool)</span><br><span class="line">&#123;</span><br><span class="line">    *SQL=connpool-&gt;<span class="built_in">GetConnection</span>();</span><br><span class="line">    conRAII=*SQL;</span><br><span class="line">    poolRAII=connpool;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+将数据库连接的获取与释放通过RAII机制封装，避免手动释放。<h3 id="单例模式创建类对象"><a href="#单例模式创建类对象" class="headerlink" title="单例模式创建类对象"></a>单例模式创建类对象</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">connection_poll* <span class="title">connection_poll::GetInstance</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">static</span> connection_poll connPool;</span><br><span class="line">    <span class="keyword">return</span> &amp;connPool;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+通过单例模式创建数据库连接池，返回静态成员变量。<h3 id="初始化数据库连接池"><a href="#初始化数据库连接池" class="headerlink" title="初始化数据库连接池"></a>初始化数据库连接池</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">connection_poll::init</span><span class="params">(string url,string User,string Password,string Databasename,<span class="type">int</span> Port,<span class="type">int</span> Maxconn,<span class="type">int</span> close_log)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    m_url=url;</span><br><span class="line">    m_Port=Port;</span><br><span class="line">    m_User=User;</span><br><span class="line">    m_Password=Password;</span><br><span class="line">    m_Databasename=Databasename;</span><br><span class="line">    m_close_log=close_log;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;Maxconn;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        MYSQL* con=<span class="literal">NULL</span>;</span><br><span class="line">        con=<span class="built_in">mysql_init</span>(con);</span><br><span class="line">        <span class="keyword">if</span>(con==<span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;MySQL Error&quot;</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        con=<span class="built_in">mysql_real_connect</span>(con,url.<span class="built_in">c_str</span>(),User.<span class="built_in">c_str</span>(),Password.<span class="built_in">c_str</span>(),Databasename.<span class="built_in">c_str</span>(),Port,<span class="literal">NULL</span>,<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span>(con==<span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;MySQL Error&quot;</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        connList.<span class="built_in">push_back</span>(con);</span><br><span class="line">        m_FreeConn++;</span><br><span class="line">    &#125;</span><br><span class="line">    reserve=<span class="built_in">sem</span>(m_FreeConn);</span><br><span class="line">    m_MaxConn=m_FreeConn;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+创建Maxconn个数据库连接。<h3 id="返回数据库连接"><a href="#返回数据库连接" class="headerlink" title="返回数据库连接"></a>返回数据库连接</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">MYSQL* <span class="title">connection_poll::GetConnection</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    MYSQL* con=<span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">if</span>(connList.<span class="built_in">size</span>()==<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    reserve.<span class="built_in">wait</span>();</span><br><span class="line">    lock.<span class="built_in">lock</span>();</span><br><span class="line">    con=connList.<span class="built_in">front</span>();</span><br><span class="line">    connList.<span class="built_in">pop_front</span>();</span><br><span class="line">    m_FreeConn--;</span><br><span class="line">    m_CurConn++;</span><br><span class="line">    lock.<span class="built_in">unlock</span>();</span><br><span class="line">    <span class="keyword">return</span> con;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+当有请求时，从数据库连接池中返回一个可用连接，原子-1，更新使用和空闲连接数，若连接池内没有连接了，则阻塞等待。<h3 id="释放数据库连接"><a href="#释放数据库连接" class="headerlink" title="释放数据库连接"></a>释放数据库连接</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">connection_poll::ReleaseConnection</span><span class="params">(MYSQL* con)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(con==<span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    lock.<span class="built_in">lock</span>();</span><br><span class="line">    connList.<span class="built_in">push_back</span>(con);</span><br><span class="line">    m_FreeConn++;</span><br><span class="line">    m_CurConn--;</span><br><span class="line">    lock.<span class="built_in">unlock</span>();</span><br><span class="line">    reserve.<span class="built_in">post</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+释放连接，原子+1。<h3 id="销毁数据库连接池"><a href="#销毁数据库连接池" class="headerlink" title="销毁数据库连接池"></a>销毁数据库连接池</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">connection_poll::DestroyPool</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    lock.<span class="built_in">lock</span>();</span><br><span class="line">    <span class="keyword">if</span>(connList.<span class="built_in">size</span>()&gt;<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        list&lt;MYSQL*&gt;::iterator it;</span><br><span class="line">        <span class="keyword">for</span>(it=connList.<span class="built_in">begin</span>();it!=connList.<span class="built_in">end</span>();it++)</span><br><span class="line">        &#123;</span><br><span class="line">            MYSQL* con=*it;</span><br><span class="line">            <span class="built_in">mysql_close</span>(con);</span><br><span class="line">        &#125;</span><br><span class="line">        m_CurConn=<span class="number">0</span>;</span><br><span class="line">        m_FreeConn=<span class="number">0</span>;</span><br><span class="line">        connList.<span class="built_in">clear</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    lock.<span class="built_in">unlock</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+通过迭代器遍历数据库连接池链表，关闭对应数据库连接，清空链表并重置空闲连接和现有连接数量。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/" rel="tag"># -学习日志</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/28/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" rel="prev" title="线程池">
+      <i class="fa fa-chevron-left"></i> 线程池
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">整体概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80API"><span class="nav-number">3.</span> <span class="nav-text">基础API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mysql-init%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">mysql_init函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mysql-close%E5%87%BD%E6%95%B0"><span class="nav-number">3.2.</span> <span class="nav-text">mysql_close函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mysql-real-connect%E5%87%BD%E6%95%B0"><span class="nav-number">3.3.</span> <span class="nav-text">mysql_real_connect函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mysql-query%E5%87%BD%E6%95%B0"><span class="nav-number">3.4.</span> <span class="nav-text">mysql_query函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mysql-store-result%E5%87%BD%E6%95%B0"><span class="nav-number">3.5.</span> <span class="nav-text">mysql_store_result函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mysql-fetch-row%E5%87%BD%E6%95%B0"><span class="nav-number">3.6.</span> <span class="nav-text">mysql_fetch_row函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mysql-field-count%E5%87%BD%E6%95%B0"><span class="nav-number">3.7.</span> <span class="nav-text">mysql_field_count函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">核心代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F"><span class="nav-number">4.1.</span> <span class="nav-text">成员变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RAII%E6%9C%BA%E5%88%B6%E5%88%9B%E5%BB%BA%E3%80%81%E9%87%8A%E6%94%BE%E8%B5%84%E6%BA%90"><span class="nav-number">4.2.</span> <span class="nav-text">RAII机制创建、释放资源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%E5%88%9B%E5%BB%BA%E7%B1%BB%E5%AF%B9%E8%B1%A1"><span class="nav-number">4.3.</span> <span class="nav-text">单例模式创建类对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0"><span class="nav-number">4.4.</span> <span class="nav-text">初始化数据库连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5"><span class="nav-number">4.5.</span> <span class="nav-text">返回数据库连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8A%E6%94%BE%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5"><span class="nav-number">4.6.</span> <span class="nav-text">释放数据库连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%80%E6%AF%81%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0"><span class="nav-number">4.7.</span> <span class="nav-text">销毁数据库连接池</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gong luyang"
+      src="/images/%E5%A4%B4%E5%83%8F.png">
+  <p class="site-author-name" itemprop="name">gong luyang</p>
+  <div class="site-description" itemprop="description">learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/glyhust" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;glyhust" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gly_hk@163.com" title="E-Mail → mailto:gly_hk@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gong luyang</span>
+</div>
+
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  <div class="bg_content">
+  <canvas id="canvas"></canvas>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/dynamic_bg.js"></script>

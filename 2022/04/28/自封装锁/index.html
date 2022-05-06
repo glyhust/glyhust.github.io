@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="整体概述对Linux下三种锁（信号量、互斥锁、条件变量）进行封装，将锁的创建和销毁函数封装在类的构造和析构函数中，实现RAII机制。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="自封装锁">
+<meta property="og:url" content="http://example.com/2022/04/28/%E8%87%AA%E5%B0%81%E8%A3%85%E9%94%81/index.html">
+<meta property="og:site_name" content="gly的学习博客">
+<meta property="og:description" content="整体概述对Linux下三种锁（信号量、互斥锁、条件变量）进行封装，将锁的创建和销毁函数封装在类的构造和析构函数中，实现RAII机制。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/06/OKsSC6.png">
+<meta property="article:published_time" content="2022-04-28T10:37:24.000Z">
+<meta property="article:modified_time" content="2022-05-06T14:07:39.656Z">
+<meta property="article:author" content="gong luyang">
+<meta property="article:tag" content="-学习日志">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/05/06/OKsSC6.png">
+
+<link rel="canonical" href="http://example.com/2022/04/28/%E8%87%AA%E5%B0%81%E8%A3%85%E9%94%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>自封装锁 | gly的学习博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gly的学习博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">既是学习记录 又是技术分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/04/28/%E8%87%AA%E5%B0%81%E8%A3%85%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
+      <meta itemprop="name" content="gong luyang">
+      <meta itemprop="description" content="learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gly的学习博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          自封装锁
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-04-28 18:37:24" itemprop="dateCreated datePublished" datetime="2022-04-28T18:37:24+08:00">2022-04-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-06 22:07:39" itemprop="dateModified" datetime="2022-05-06T22:07:39+08:00">2022-05-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>对Linux下三种锁（信号量、互斥锁、条件变量）进行封装，将锁的创建和销毁函数封装在类的构造和析构函数中，实现RAII机制。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/OKsSC6"><img src="https://s1.ax1x.com/2022/05/06/OKsSC6.png" alt="自封装锁"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="信号量"><a href="#信号量" class="headerlink" title="信号量"></a>信号量</h3><p>信号量是一种特殊的变量，它只能取自然数值并且只支持两种操作：等待(P)和信号(V)，假设有信号量SV，P操作：如果SV的值大于0，则将其减一，若SV的值为0，则挂起执行；V操作：如果有其他进行因为等待SV而挂起，则唤醒，若没有，则将SV值加一。</p>
+<h3 id="互斥锁"><a href="#互斥锁" class="headerlink" title="互斥锁"></a>互斥锁</h3><p>互斥锁，也成互斥量，可以保护关键代码段，以确保独占式访问，当进入关键代码段，获得互斥锁将其加锁，离开关键代码段，唤醒等待该互斥锁的线程。</p>
+<h3 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h3><p>条件变量是利用线程间共享的全局变量进行同步的一种机制，主要包括两个动作：一个线程等待”条件变量的条件成立”而挂起；另一个线程使”条件成立”（给出条件成立信号）。为了防止竞争，条件变量的使用总是和一个互斥锁结合在一起。</p>
+<h3 id="RAII"><a href="#RAII" class="headerlink" title="RAII"></a>RAII</h3><p>RAII是Resource Acquisition Is Initialization的简称，是C++语言的一种管理资源、避免泄漏的惯用法。利用的就是C++构造的对象最终会被销毁的原则。RAII的做法是使用一个对象，在其构造时获取对应的资源，在对象生命期内控制对资源的访问，使之始终保持有效，最后在对象析构的时候，释放构造时获取的资源。在计算机系统中，资源是数量有限且对系统正常运行具有一定作用的元素。比如：网络套接字、互斥锁、文件句柄和内存等等，它们属于系统资源。由于系统的资源是有限的，就好比自然界的石油，铁矿一样，不是取之不尽，用之不竭的，所以，我们在编程使用系统资源时，都必须遵循一个步骤：</p>
+<ul>
+<li>申请资源；</li>
+<li>使用资源；</li>
+<li>释放资源；</li>
+</ul>
+<p>第一步和第二步缺一不可，因为资源必须要申请才能使用的，使用完成以后，必须要释放，如果不释放的话，就会造成资源泄漏。但是如果程序很复杂的时候，需要为所有的new分配的内存delete掉，导致极度臃肿，效率下降，更可怕的是，程序的可理解性和可维护性明显降低了，当操作增多时，处理资源释放的代码就会越来越多，越来越乱。如果某一个操作发生了异常而导致释放资源的语句没有被调用，这个时候RAII机制就可以派上用场了。</p>
+<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="信号量初始化"><a href="#信号量初始化" class="headerlink" title="信号量初始化"></a>信号量初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sem_init</span><span class="params">(<span class="type">sem_t</span>* sem,<span class="type">int</span> pshared,<span class="type">unsigned</span> <span class="type">int</span> value)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：初始化信号量；</li>
+<li>参数：<ul>
+<li>sem：指向未初始化信号量结构的一个指针；</li>
+<li>pshared：表示这个信号量是在进程的线程之间共享，还是在进程之间共享；<ul>
+<li>如果为0，那么这个信号量会在进程的线程之间共享，并且应该位于对所有线程都可见的某个地址；</li>
+<li>如果不为0，那么这个信号量将在进程之间共享，并且应该位于共享内存的某个区域；</li>
+</ul>
+</li>
+<li>value：指定信号量的初始值；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="信号量销毁"><a href="#信号量销毁" class="headerlink" title="信号量销毁"></a>信号量销毁</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sem_destroy</span><span class="params">(<span class="type">sem_t</span> *sem)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：释放信号量；</li>
+<li>参数：<ul>
+<li>sem：通过sem_init()初始化的信号量；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="信号量原子-1"><a href="#信号量原子-1" class="headerlink" title="信号量原子-1"></a>信号量原子-1</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sem_wait</span><span class="params">(<span class="type">sem_t</span> *sem)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：是一个原子操作，它的作用是将信号量的值-1，但它永远会先等待该信号量为一个非零值才开始做减法。也就是说，如果你对一个值为2的信号量调用sem_wait(),线程将会继续执行，将信号量的值将减到1。如果对一个值为0的信号量调用sem_wait()，这个函数就会地等待直到有其它线程增加了这个值使它不再是0为止；</li>
+<li>参数：<ul>
+<li>sem：通过sem_init()初始化的信号量；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="信号量原子-1-1"><a href="#信号量原子-1-1" class="headerlink" title="信号量原子+1"></a>信号量原子+1</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sem_post</span><span class="params">(<span class="type">sem_t</span> *sem)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：给信号量的值+1，它是一个原子操作，即同时对同一个信号量做+1操作的两个线程是不会冲突的；</li>
+<li>参数：<ul>
+<li>sem：通过sem_init()初始化的信号量；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="互斥锁初始化"><a href="#互斥锁初始化" class="headerlink" title="互斥锁初始化"></a>互斥锁初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_mutex_init</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex,<span class="type">const</span> <span class="type">pthread_mutexattr_t</span> *attr)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：初始化互斥锁；</li>
+<li>参数：<ul>
+<li>mutex：初始化互斥锁的地址；</li>
+<li>attr：指定了新建互斥锁的属性，如果参数attr为NULL，则使用默认的互斥锁属性；</li>
+</ul>
+</li>
+<li>返回值：调用成功返回0，否则返回一个非0的错误代码；</li>
+</ul>
+<h3 id="互斥锁销毁"><a href="#互斥锁销毁" class="headerlink" title="互斥锁销毁"></a>互斥锁销毁</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_mutex_destroy</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span></span>; </span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：释放分配给互斥锁mutex的资源；</li>
+<li>参数：<ul>
+<li>mutex：需要销毁的互斥锁地址；</li>
+</ul>
+</li>
+<li>返回值：调用成功返回0，否则返回一个非0的错误代码；</li>
+</ul>
+<h3 id="互斥锁上锁"><a href="#互斥锁上锁" class="headerlink" title="互斥锁上锁"></a>互斥锁上锁</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_mutex_lock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span></span>; </span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：锁住互斥锁变量，如果已被锁住，那么发出调用的线程将被阻塞直到其它进程对mutex解锁；</li>
+<li>参数：<ul>
+<li>mutex：需要上锁的互斥锁地址；</li>
+</ul>
+</li>
+<li>返回值：上锁成功返回0，否则返回一个非0的错误代码；</li>
+</ul>
+<h3 id="互斥锁解锁"><a href="#互斥锁解锁" class="headerlink" title="互斥锁解锁"></a>互斥锁解锁</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_mutex_unlock</span><span class="params">(<span class="type">pthread_mutex_t</span> *mutex)</span></span>; </span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：解除互斥锁，释放mutex引用的互斥锁对象，如果调用pthread_mutex_unlock()时有多个线程被mutex对象阻塞，则互斥锁变为可用时调度策略可确定获取该互斥锁的线程。 </li>
+<li>参数：<ul>
+<li>mutex：需要解锁的互斥锁地址；</li>
+</ul>
+</li>
+<li>返回值：解锁成功返回0，否则返回一个非0的错误代码；</li>
+</ul>
+<h3 id="信号量初始化-1"><a href="#信号量初始化-1" class="headerlink" title="信号量初始化"></a>信号量初始化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_cond_init</span><span class="params">(<span class="type">pthread_cond_t</span> *cond,<span class="type">const</span> <span class="type">pthread_condattr_t</span> *attr)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：初始化一个条件变量；</li>
+<li>参数：<ul>
+<li>cond：需要初始化的条件变量地址；</li>
+<li>attr：需要指定的条件变量的属性，默认为0；</li>
+</ul>
+</li>
+<li>返回值：初始化成功返回0，否则返回一个非0的错误代码；</li>
+</ul>
+<h3 id="信号量销毁-1"><a href="#信号量销毁-1" class="headerlink" title="信号量销毁"></a>信号量销毁</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_cond_destroy</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：销毁一个条件变量，释放资源；</li>
+<li>参数：<ul>
+<li>cond：需要销毁的条件变量地址；</li>
+</ul>
+</li>
+<li>返回值：销毁成功返回0，否则返回一个非0的错误代码；</li>
+</ul>
+<h3 id="信号量wait"><a href="#信号量wait" class="headerlink" title="信号量wait"></a>信号量wait</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_cond_wait</span><span class="params">(<span class="type">pthread_cond_t</span> *cond,<span class="type">pthread_mutex_t</span> *mutex)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_cond_timedwait</span><span class="params">(<span class="type">pthread_cond_t</span> *cond,<span class="type">pthread_mutex_t</span> *mutex, <span class="type">const</span> structtimespec * abstime)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：线程阻塞在条件变量，直到收到这个条件变量相关的通知。需要传入已经lock的mutex变量。进入wait函数会自动解锁mutex参数指向的互斥锁，并使当前线程阻塞在cond参数指向的条件变量上。当线程被唤醒，退出wait函数时会自动对锁再次进行加锁，成功后返回。被阻塞的线程可以被pthread_cond_signal函数、pthread_cond_broadcast函数唤醒。一般一个条件表达式都是在一个互斥锁的保护下被检查。当条件表达式未被满足时，线程将仍然阻塞在这个条件变量上。当另一个线程改变了条件的值并向条件变量发出信号时，等待在这个条件变量上的一个线程或所有线程被唤醒，接着都试图再次占有相应的互斥锁。</li>
+<li>参数：<ul>
+<li>cond：条件变量地址；</li>
+<li>mutex：互斥锁地址；</li>
+<li>abstime：指定超时时间，函数到了一定的时间，即使条件未发生也会解除阻塞；</li>
+</ul>
+</li>
+<li>返回值：调用成功返回0，否则返回一个非0的错误代码；</li>
+</ul>
+<h3 id="信号量signal"><a href="#信号量signal" class="headerlink" title="信号量signal"></a>信号量signal</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_cond_signal</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_cond_broadcast</span><span class="params">(<span class="type">pthread_cond_t</span> *cond)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：这两个函数都会对指定的条件变量产生信号，通知其他线程。唯一一个区别在于当有多个线程阻塞等待条件变量的信号时，这两个函数产生信号后，对其他线程产生的影响会不一样。pthread_cond_signal 会保证至少会唤醒其中一个阻塞在这个条件变量的的线程。pthread_cond_broadcast会唤醒所有阻塞在这个条件变量的线程，适用于那些阻塞的不同线程被唤醒后会处理不同的任务。</li>
+<li>参数：cond：条件变量地址；</li>
+<li>返回值：调用成功返回0，否者返回一个非0的错误代码；</li>
+</ul>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="信号量类具体实现"><a href="#信号量类具体实现" class="headerlink" title="信号量类具体实现"></a>信号量类具体实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">sem</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">sem_t</span> m_sem;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">sem</span>()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">sem_init</span>(&amp;m_sem,<span class="number">0</span>,<span class="number">0</span>)!=<span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">sem</span>(<span class="type">int</span> num)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">sem_init</span>(&amp;m_sem,<span class="number">0</span>,num)!=<span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    ~<span class="built_in">sem</span>()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">sem_destroy</span>(&amp;m_sem);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">wait</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">sem_wait</span>(&amp;m_sem)==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">post</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">sem_post</span>(&amp;m_sem)==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="互斥锁类具体实现"><a href="#互斥锁类具体实现" class="headerlink" title="互斥锁类具体实现"></a>互斥锁类具体实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">locker</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">pthread_mutex_t</span> m_mutex;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">locker</span>()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">pthread_mutex_init</span>(&amp;m_mutex,<span class="literal">NULL</span>)!=<span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    ~<span class="built_in">locker</span>()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">pthread_mutex_destroy</span>(&amp;m_mutex);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">lock</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">pthread_mutex_lock</span>(&amp;m_mutex)==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">unlock</span><span class="params">()</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">pthread_mutex_unlock</span>(&amp;m_mutex)==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">pthread_mutex_t</span>* <span class="title">get</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> &amp;m_mutex;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="条件变量类具体实现"><a href="#条件变量类具体实现" class="headerlink" title="条件变量类具体实现"></a>条件变量类具体实现</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">cond</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">pthread_cond_t</span> m_cond;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">cond</span>() </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">pthread_cond_init</span>(&amp;m_cond,<span class="literal">NULL</span>)!=<span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    ~<span class="built_in">cond</span>() </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">pthread_cond_destroy</span>(&amp;m_cond);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">wait</span><span class="params">(<span class="type">pthread_mutex_t</span>* m_mutex)</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="type">int</span> ret=<span class="built_in">pthread_cond_wait</span>(&amp;m_cond,m_mutex);</span><br><span class="line">        <span class="keyword">return</span> ret==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">timewait</span><span class="params">(<span class="type">pthread_mutex_t</span>* m_mutex,<span class="keyword">struct</span> timespec t)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="type">int</span> ret=<span class="built_in">pthread_cond_timedwait</span>(&amp;m_cond,m_mutex,&amp;t);</span><br><span class="line">        <span class="keyword">return</span> ret==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">signal</span><span class="params">()</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">pthread_cond_signal</span>(&amp;m_cond)==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">broadcast</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">pthread_cond_broadcast</span>(&amp;m_cond)==<span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/" rel="tag"># -学习日志</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/27/hello-world/" rel="prev" title="Hello World">
+      <i class="fa fa-chevron-left"></i> Hello World
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/28/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" rel="next" title="线程池">
+      线程池 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">整体概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F"><span class="nav-number">2.1.</span> <span class="nav-text">信号量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%92%E6%96%A5%E9%94%81"><span class="nav-number">2.2.</span> <span class="nav-text">互斥锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="nav-number">2.3.</span> <span class="nav-text">条件变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RAII"><span class="nav-number">2.4.</span> <span class="nav-text">RAII</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80API"><span class="nav-number">3.</span> <span class="nav-text">基础API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">3.1.</span> <span class="nav-text">信号量初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F%E9%94%80%E6%AF%81"><span class="nav-number">3.2.</span> <span class="nav-text">信号量销毁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F%E5%8E%9F%E5%AD%90-1"><span class="nav-number">3.3.</span> <span class="nav-text">信号量原子-1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F%E5%8E%9F%E5%AD%90-1-1"><span class="nav-number">3.4.</span> <span class="nav-text">信号量原子+1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%92%E6%96%A5%E9%94%81%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">3.5.</span> <span class="nav-text">互斥锁初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%92%E6%96%A5%E9%94%81%E9%94%80%E6%AF%81"><span class="nav-number">3.6.</span> <span class="nav-text">互斥锁销毁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%92%E6%96%A5%E9%94%81%E4%B8%8A%E9%94%81"><span class="nav-number">3.7.</span> <span class="nav-text">互斥锁上锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%92%E6%96%A5%E9%94%81%E8%A7%A3%E9%94%81"><span class="nav-number">3.8.</span> <span class="nav-text">互斥锁解锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F%E5%88%9D%E5%A7%8B%E5%8C%96-1"><span class="nav-number">3.9.</span> <span class="nav-text">信号量初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F%E9%94%80%E6%AF%81-1"><span class="nav-number">3.10.</span> <span class="nav-text">信号量销毁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8Fwait"><span class="nav-number">3.11.</span> <span class="nav-text">信号量wait</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8Fsignal"><span class="nav-number">3.12.</span> <span class="nav-text">信号量signal</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">核心代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E5%8F%B7%E9%87%8F%E7%B1%BB%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.1.</span> <span class="nav-text">信号量类具体实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%92%E6%96%A5%E9%94%81%E7%B1%BB%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.2.</span> <span class="nav-text">互斥锁类具体实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9D%A1%E4%BB%B6%E5%8F%98%E9%87%8F%E7%B1%BB%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.3.</span> <span class="nav-text">条件变量类具体实现</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gong luyang"
+      src="/images/%E5%A4%B4%E5%83%8F.png">
+  <p class="site-author-name" itemprop="name">gong luyang</p>
+  <div class="site-description" itemprop="description">learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/glyhust" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;glyhust" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gly_hk@163.com" title="E-Mail → mailto:gly_hk@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gong luyang</span>
+</div>
+
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  <div class="bg_content">
+  <canvas id="canvas"></canvas>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/dynamic_bg.js"></script>
