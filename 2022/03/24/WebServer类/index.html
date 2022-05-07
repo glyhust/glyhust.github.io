@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="整体概述">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WebServer类">
+<meta property="og:url" content="http://example.com/2022/03/24/WebServer%E7%B1%BB/index.html">
+<meta property="og:site_name" content="gly的学习博客">
+<meta property="og:description" content="整体概述">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/07/OQMG6K.png">
+<meta property="article:published_time" content="2022-03-24T01:24:34.000Z">
+<meta property="article:modified_time" content="2022-05-07T11:09:37.466Z">
+<meta property="article:author" content="gong luyang">
+<meta property="article:tag" content="-学习日志">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/05/07/OQMG6K.png">
+
+<link rel="canonical" href="http://example.com/2022/03/24/WebServer%E7%B1%BB/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>WebServer类 | gly的学习博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gly的学习博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">既是学习记录 又是技术分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/03/24/WebServer%E7%B1%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
+      <meta itemprop="name" content="gong luyang">
+      <meta itemprop="description" content="learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gly的学习博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          WebServer类
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-24 09:24:34" itemprop="dateCreated datePublished" datetime="2022-03-24T09:24:34+08:00">2022-03-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-07 19:09:37" itemprop="dateModified" datetime="2022-05-07T19:09:37+08:00">2022-05-07</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/OQMG6K"><img src="https://s1.ax1x.com/2022/05/07/OQMG6K.png" alt="服务器类"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="Socket通信"><a href="#Socket通信" class="headerlink" title="Socket通信"></a>Socket通信</h3><p>Socket（套接字）用来描述IP地址和端口，是通信链的句柄，应用程序可以通过Socket向网络发送请求或者应答网络请求。Socket是支持TCP&#x2F;IP协议的网络通信的基本操作单元，是对网络通信过程中端点的抽象表示，包含了进行网络通信所必须的五种信息：连接所使用的协议；本地主机的IP地址；本地远程的协议端口；远程主机的IP地址；远程地址的协议端口。在基于TCP协议的Socket通信过程中，服务端首先声明一个Socket对象并指定端口号，然后调用accept方法接受客户端的数据。accept方法在没有数据进行接受时处于堵塞状态；客户端创建Socket对象，执行服务器端的IP地址和端口号，与服务端建立通信。</p>
+<h3 id="字节序"><a href="#字节序" class="headerlink" title="字节序"></a>字节序</h3><p>不同的CPU有不同的字节序类型 这些字节序是指整数在内存中保存的顺序 这个叫做主机字节序，最常见的有两种，小端：将低序字节存储在起始地址；大端：将高序字节存储在起始地址。网络字节顺序是TCP&#x2F;IP中规定好的一种数据表示格式，它与具体的CPU类型、操作系统等无关，从而可以保证数据在不同主机之间传输时能够被正确解释。网络字节顺序采用大端方式。为了在主机字节序和网络字节序中进行转换，提供了四个转换函数：</p>
+<ul>
+<li>htons：把unsigned short类型从主机序转换到网络序；</li>
+<li>htonl：把unsigned long类型从主机序转换到网络序；</li>
+<li>ntohs：把unsigned short类型从网络序转换到主机序；</li>
+<li>ntohl：把unsigned long类型从网络序转换到主机序；</li>
+</ul>
+<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="创建socket"><a href="#创建socket" class="headerlink" title="创建socket"></a>创建socket</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">socket</span><span class="params">(<span class="type">int</span> domain, <span class="type">int</span> type, <span class="type">int</span> protocol)</span></span>; </span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：建立一个协议族为domain、协议类型为type、协议编号为protocol的套接字文件描述符；</li>
+<li>参数：<ul>
+<li>domain：设置网络通信的域；<ul>
+<li>PF_UNIX,PF_LOCAL：本地通信；</li>
+<li>AF_INET,PF_INET：IPV4协议；</li>
+<li>PF_INET6：IPV6协议；</li>
+</ul>
+</li>
+<li>type：设置套接字通信的类型；<ul>
+<li>SOCK_STREAM：Tcp连接，提供序列化的、可靠的、双向连接的字节流。支持带外数据传输；</li>
+<li>SOCK_DGRAM：支持UDP连接（无连接状态的消息）；</li>
+</ul>
+</li>
+<li>protocol：制定某个协议的特定类型，即type类型中的某个类型。通常某协议中只有一种特定类型，这样protocol参数仅能设置为0；但是有些协议有多种特定的类型，需要设置这个参数来选择特定的类型；</li>
+</ul>
+</li>
+<li>返回值：调用成功返回一个标识这个套接字的文件描述符，失败的时候返回-1；</li>
+</ul>
+<h3 id="设置socket"><a href="#设置socket" class="headerlink" title="设置socket"></a>设置socket</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">setsockopt</span><span class="params">(<span class="type">int</span> sock, <span class="type">int</span> level, <span class="type">int</span> optname, <span class="type">const</span> <span class="type">void</span> *optval, <span class="type">socklen_t</span> optlen)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：设置与某个套接字关联的选项；</li>
+<li>参数：<ul>
+<li>sock：需要设置的套接字；</li>
+<li>level：指定控制套接字的层次：<ul>
+<li>SOL_SOCKET：通用套接字选项；</li>
+<li>IPPROTO_IP：IP选项；</li>
+<li>IPPROTO_TCP：TCP选项；</li>
+</ul>
+</li>
+<li>optname：指定控制的方式：<ul>
+<li>SO_LINGER：延迟关闭连接；</li>
+</ul>
+</li>
+<li>optval：根据optname的数据类型进行转换；</li>
+<li>optlen：选项的长度；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="绑定socket"><a href="#绑定socket" class="headerlink" title="绑定socket"></a>绑定socket</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">bind</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="keyword">struct</span> sockaddr *addr, <span class="type">socklen_t</span> addrlen)</span></span>; </span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> </span><br><span class="line">&#123;</span><br><span class="line"> <span class="type">short</span>            sin_family;    <span class="comment">// 2 字节 ，地址族，e.g. AF_INET, AF_INET6</span></span><br><span class="line"> <span class="type">unsigned</span> <span class="type">short</span>   sin_port;      <span class="comment">// 2 字节 ，16位TCP/UDP 端口号 e.g. htons(3490)，</span></span><br><span class="line"> <span class="keyword">struct</span> <span class="title class_">in_addr</span>   sin_addr;      <span class="comment">// 4 字节 ，32位IP地址</span></span><br><span class="line"> <span class="type">char</span>             sin_zero[<span class="number">8</span>];   <span class="comment">// 8 字节 ，不使用</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：把一个地址族中的特定地址赋给socket；</li>
+<li>参数：<ul>
+<li>sockfd：通过socket()函数创建的socket套接字；</li>
+<li>addr：sockaddr结构体指针，指向要绑定给sockfd的协议地址；</li>
+<li>addrlen：地址的长度；</li>
+</ul>
+</li>
+<li>返回值：绑定成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="监听socket"><a href="#监听socket" class="headerlink" title="监听socket"></a>监听socket</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">listen</span><span class="params">(<span class="type">int</span> sockfd,<span class="type">int</span> backlog)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：使用主动连接套接口变为被连接套接口，使得一个进程可以接受其它进程的请求，从而成为一个服务器进程；</li>
+<li>参数：<ul>
+<li>sockfd：通过socket()函数创建的socket套接字；</li>
+<li>backlog：建立好连接处于ESTABLISHED状态的队列最大长度；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="连接socket"><a href="#连接socket" class="headerlink" title="连接socket"></a>连接socket</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">connect</span><span class="params">(<span class="type">int</span> sockfd,<span class="keyword">struct</span> sockaddr* serv_addr,<span class="type">int</span> addrlen)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：客户端调用，与服务端建立TCP连接；</li>
+<li>参数：<ul>
+<li>sockfd：通过socket()函数创建的socket套接字；</li>
+<li>serv_addr：sockaddr结构体指针，保存了想要连接的服务端主机地址和端口号；</li>
+<li>addrlen：地址的长度；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="接收socket"><a href="#接收socket" class="headerlink" title="接收socket"></a>接收socket</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">accept</span><span class="params">(<span class="type">int</span> socket,<span class="keyword">struct</span> sockaddr* addr,<span class="type">socklen_t</span> addrlen)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：服务端监听到客户端发送过来的connect请求后，调用accept函数接收请求，这样就建立好了连接；</li>
+<li>参数：<ul>
+<li>socket：通过socket()函数创建的socket套接字；</li>
+<li>addr：sockaddr结构体指针，保存了建立连接的客户端主机地址和端口号；</li>
+<li>addrlen：地址的长度；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h3 id="创建管道通信"><a href="#创建管道通信" class="headerlink" title="创建管道通信"></a>创建管道通信</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">socketpair</span><span class="params">(<span class="type">int</span> domain, <span class="type">int</span> type, <span class="type">int</span> protocol, <span class="type">int</span> sv[<span class="number">2</span>])</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：创建管道进行进程间通信；</li>
+<li>参数：<ul>
+<li>domain：表示协议族，在Linux下只能为AF_LOCAL或者AF_UNIX；</li>
+<li>type：表示协议，可以是SOCK_STREAM（TCP）或者SOCK_DGRAM（UDP）；</li>
+<li>protocol：表示类型，只能为0；</li>
+<li>sv[2]：管道，两端都可以读写；</li>
+</ul>
+</li>
+<li>返回值：成功返回0，失败返回-1；</li>
+</ul>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="类成员变量"><a href="#类成员变量" class="headerlink" title="类成员变量"></a>类成员变量</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">connection_poll* m_connpool;          <span class="comment">//数据库连接池</span></span><br><span class="line">string m_user;                        <span class="comment">//数据库信息:登录名</span></span><br><span class="line">string m_passWord;                    <span class="comment">//数据库信息:密码</span></span><br><span class="line">string m_databaseName;                <span class="comment">//数据库信息:库名</span></span><br><span class="line"><span class="type">int</span> m_sql_num;                        <span class="comment">//连接池数量</span></span><br><span class="line">threadpool&lt;http_conn&gt;* m_pool;        <span class="comment">//线程池</span></span><br><span class="line"><span class="type">int</span> m_thread_num;                     <span class="comment">//线程数量</span></span><br><span class="line">epoll_event events[MAX_EVENT_NUMBER]; <span class="comment">//epoll调用返回的事件集合</span></span><br><span class="line"><span class="type">int</span> m_epollfd;                        <span class="comment">//epoll文件描述符</span></span><br><span class="line"><span class="type">int</span> m_listenfd;                       <span class="comment">//监听文件描述符</span></span><br><span class="line"><span class="type">int</span> m_OPT_LINGER;                     <span class="comment">//优雅关闭连接</span></span><br><span class="line"><span class="type">int</span> m_LISTENTrigmode;                 <span class="comment">//listenfd触发模式</span></span><br><span class="line"><span class="type">int</span> m_CONNTrigmode;                   <span class="comment">//connfd触发模式</span></span><br><span class="line">client_data* users_timer;             <span class="comment">//定时器资源</span></span><br><span class="line">Utils utils;                          <span class="comment">//定时器对象</span></span><br><span class="line">http_conn* users;                     <span class="comment">//http解析对象</span></span><br><span class="line"><span class="type">int</span> m_port;                           <span class="comment">//端口号</span></span><br><span class="line"><span class="type">char</span>* m_root;                         <span class="comment">//root资源路径</span></span><br><span class="line"><span class="type">int</span> m_log_write;                      <span class="comment">//异步日志</span></span><br><span class="line"><span class="type">int</span> m_close_log;                      <span class="comment">//关闭日志</span></span><br><span class="line"><span class="type">int</span> m_actormodel;                     <span class="comment">//工作模式</span></span><br><span class="line"><span class="type">int</span> m_pipefd[<span class="number">2</span>];                      <span class="comment">//管道</span></span><br></pre></td></tr></table></figure>
+<h3 id="类的构造函数"><a href="#类的构造函数" class="headerlink" title="类的构造函数"></a>类的构造函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">    WebServer::<span class="built_in">WebServer</span>()</span><br><span class="line">&#123;</span><br><span class="line">    users = <span class="keyword">new</span> http_conn[MAX_FD];</span><br><span class="line">    m_root=<span class="built_in">getcwd</span>(<span class="literal">nullptr</span>,<span class="number">256</span>);</span><br><span class="line">    <span class="built_in">assert</span>(m_root);</span><br><span class="line">    <span class="built_in">strncat</span>(m_root,<span class="string">&quot;/root&quot;</span>,<span class="number">6</span>);</span><br><span class="line">    users_timer = <span class="keyword">new</span> client_data[MAX_FD];</span><br><span class="line"></span><br><span class="line">    m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">    m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">    m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">    m_log_write = <span class="number">0</span>;           <span class="comment">//日志模式，默认同步</span></span><br><span class="line">    m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">    m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">    m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">    m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">    m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">    m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">    m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">    m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过类的构造函数初始化相关变量，生成默认最大事件数的http类对象和定时器。</p>
+<h3 id="类的析构函数"><a href="#类的析构函数" class="headerlink" title="类的析构函数"></a>类的析构函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    WebServer::~<span class="built_in">WebServer</span>()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">close</span>(m_epollfd);   <span class="comment">//关闭epoll文件描述符</span></span><br><span class="line">    <span class="built_in">close</span>(m_listenfd);  <span class="comment">//关闭监听文件描述符</span></span><br><span class="line">    <span class="built_in">close</span>(m_pipefd[<span class="number">1</span>]); <span class="comment">//关闭管道</span></span><br><span class="line">    <span class="built_in">close</span>(m_pipefd[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">delete</span>[] users;      <span class="comment">//释放http解析资源</span></span><br><span class="line">    <span class="keyword">delete</span>[] users_timer;<span class="comment">//释放定时器资源</span></span><br><span class="line">    <span class="keyword">delete</span> m_pool;       <span class="comment">//释放线程池资源</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当类对象离开作用域时，调用析构函数自动释放资源：关闭epoll文件描述符、监听文件描述符，关闭管道，释放http解析资源、定时器资源和线程池资源。</p>
+<h3 id="开启日志"><a href="#开启日志" class="headerlink" title="开启日志"></a>开启日志</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="type">void</span> <span class="title">WebServer::log_write</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> == m_close_log)  <span class="comment">//日志未关闭</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">1</span> == m_log_write)</span><br><span class="line">            Log::<span class="built_in">get_instance</span>()-&gt;<span class="built_in">init</span>(<span class="string">&quot;./ServerLog&quot;</span>, m_close_log, <span class="number">2000</span>, <span class="number">800000</span>, <span class="number">800</span>); <span class="comment">//异步</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            Log::<span class="built_in">get_instance</span>()-&gt;<span class="built_in">init</span>(<span class="string">&quot;./ServerLog&quot;</span>, m_close_log, <span class="number">2000</span>, <span class="number">800000</span>, <span class="number">0</span>);   <span class="comment">//同步</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用日志类的get_instance函数，通过单例模式返回一个静态类对象，之后调用init函数开启日志，通过参数max_queue_size判断异步&#x2F;同步模式。当其大于0时，说明是异步日志模式，此时创建指定大小的阻塞队列，同时创建新线程，用于从阻塞队列中取出写日志任务。当其不大于0时，不做额外操作。</p>
+<h3 id="建立数据库连接池"><a href="#建立数据库连接池" class="headerlink" title="建立数据库连接池"></a>建立数据库连接池</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WebServer::sql_pool</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    m_connpool = connection_poll::<span class="built_in">GetInstance</span>();</span><br><span class="line">    m_connpool-&gt;<span class="built_in">init</span>(<span class="string">&quot;localhost&quot;</span>, m_user, m_passWord, m_databaseName, <span class="number">3306</span>, m_sql_num, m_close_log);</span><br><span class="line"></span><br><span class="line">    users-&gt;<span class="built_in">initmysql_result</span>(m_connpool);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用GetInstance函数，通过单例模式返回一个静态类对象，之后调用init函数，登录数据库用户名密码，建立指定大小的数据库连接池，最后调用initmysql_result函数，取出数据库内存储的浏览器端的用户名和密码，供后续注册、登录验证。</p>
+<h3 id="建立线程池"><a href="#建立线程池" class="headerlink" title="建立线程池"></a>建立线程池</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WebServer::thread_pool</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    m_pool = <span class="keyword">new</span> <span class="built_in">threadpool</span>&lt;http_conn&gt;(m_actormodel, m_connpool, m_thread_num);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在线程池中创建指定数量的线程，线程执行worker函数，其调用私有工作run函数，run函数从工作队列中取出任务执行，如果队列为空则堵塞等待。</p>
+<h3 id="建立epoll监听"><a href="#建立epoll监听" class="headerlink" title="建立epoll监听"></a>建立epoll监听</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WebServer::eventListen</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    m_listenfd = <span class="built_in">socket</span>(PF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    <span class="built_in">assert</span>(m_listenfd &gt;= <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> == m_OPT_LINGER)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">linger</span> tmp = &#123;<span class="number">0</span>, <span class="number">1</span>&#125;;</span><br><span class="line">        <span class="built_in">setsockopt</span>(m_listenfd, SOL_SOCKET, SO_LINGER, &amp;tmp, <span class="built_in">sizeof</span>(tmp));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (<span class="number">1</span> == m_OPT_LINGER)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">struct</span> linger tmp = &#123;<span class="number">1</span>, <span class="number">1</span>&#125;;</span><br><span class="line">        <span class="built_in">setsockopt</span>(m_listenfd, SOL_SOCKET, SO_LINGER, &amp;tmp, <span class="built_in">sizeof</span>(tmp));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> address;</span><br><span class="line">    <span class="built_in">bzero</span>(&amp;address, <span class="built_in">sizeof</span>(address));</span><br><span class="line">    address.sin_family = AF_INET;</span><br><span class="line">    address.sin_addr.s_addr = <span class="built_in">htonl</span>(INADDR_ANY);</span><br><span class="line">    address.sin_port = <span class="built_in">htons</span>(m_port);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> flag = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">setsockopt</span>(m_listenfd, SOL_SOCKET, SO_REUSEADDR, &amp;flag, <span class="built_in">sizeof</span>(flag));</span><br><span class="line">    ret = <span class="built_in">bind</span>(m_listenfd, (<span class="keyword">struct</span> sockaddr *)&amp;address, <span class="built_in">sizeof</span>(address));</span><br><span class="line">    <span class="built_in">assert</span>(ret &gt;= <span class="number">0</span>);</span><br><span class="line">    ret = <span class="built_in">listen</span>(m_listenfd, <span class="number">5</span>);</span><br><span class="line">    <span class="built_in">assert</span>(ret &gt;= <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    utils.<span class="built_in">init</span>(TIMESLOT);</span><br><span class="line"></span><br><span class="line">    epoll_event events[MAX_EVENT_NUMBER];</span><br><span class="line">    m_epollfd = <span class="built_in">epoll_create</span>(<span class="number">5</span>);</span><br><span class="line">    <span class="built_in">assert</span>(m_epollfd != <span class="number">-1</span>);</span><br><span class="line"></span><br><span class="line">    utils.<span class="built_in">addfd</span>(m_epollfd, m_listenfd, <span class="literal">false</span>, m_LISTENTrigmode);</span><br><span class="line">    http_conn::m_epollfd = m_epollfd;</span><br><span class="line"></span><br><span class="line">    ret = <span class="built_in">socketpair</span>(PF_UNIX, SOCK_STREAM, <span class="number">0</span>, m_pipefd);</span><br><span class="line">    <span class="built_in">assert</span>(ret != <span class="number">-1</span>);</span><br><span class="line">    utils.<span class="built_in">setnonblocking</span>(m_pipefd[<span class="number">1</span>]);</span><br><span class="line">    utils.<span class="built_in">addfd</span>(m_epollfd, m_pipefd[<span class="number">0</span>], <span class="literal">false</span>, <span class="number">0</span>);</span><br><span class="line">    utils.<span class="built_in">addsig</span>(SIGPIPE, SIG_IGN);</span><br><span class="line">    utils.<span class="built_in">addsig</span>(SIGALRM, utils.sig_handler, <span class="literal">false</span>);</span><br><span class="line">    utils.<span class="built_in">addsig</span>(SIGTERM, utils.sig_handler, <span class="literal">false</span>);</span><br><span class="line">    <span class="built_in">alarm</span>(TIMESLOT);</span><br><span class="line">    Utils::u_pipefd = m_pipefd;</span><br><span class="line">    Utils::u_epollfd = m_epollfd;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在服务端中，socket通信从创建socket套接字开始，之后调用bind函数绑定本地的IP地址和端口号，再调用listen函数监听客户端发来的连接。其中可以根据m_OPT_LINGER标志判断是否开始优雅关闭连接，默认当调用close函数时会立即返回，这样可能会有未发送的数据。当标志置1时，则调用setsockopt函数设置延迟关闭，即当文件描述符关闭时内核将拖延一段时间，如果缓冲区扔残留数据，进程将处于睡眠状态，直到（a）所有数据发送完且被对方确认，之后进行正常的终止序列（描述字访问计数为0）或（b）延迟时间到。此种情况下，应用程序检查close的返回值是非常重要的，如果在数据发送完并被确认前时间到，close将返回EWOULDBLOCK错误且套接口发送缓冲区中的任何数据都丢失。close的成功返回仅告诉我们发送的数据（和FIN）已由对方TCP确认，它并不能告诉我们对方应用进程是否已读了数据。如果套接口设为非阻塞的，它将不等待close完成。</p>
+<h3 id="处理epoll监听事件队列"><a href="#处理epoll监听事件队列" class="headerlink" title="处理epoll监听事件队列"></a>处理epoll监听事件队列</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WebServer::eventLoop</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">bool</span> timeout = <span class="literal">false</span>;</span><br><span class="line">    <span class="type">bool</span> stop_server = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">while</span> (!stop_server)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> number = <span class="built_in">epoll_wait</span>(m_epollfd, events, MAX_EVENT_NUMBER, <span class="number">-1</span>);</span><br><span class="line">        <span class="keyword">if</span> (number &lt; <span class="number">0</span> &amp;&amp; errno != EINTR)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;%s&quot;</span>, <span class="string">&quot;epoll failure&quot;</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; number; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> sockfd = events[i].data.fd;</span><br><span class="line">            <span class="keyword">if</span> (sockfd == m_listenfd)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="type">bool</span> flag = <span class="built_in">dealclinetdata</span>();</span><br><span class="line">                <span class="keyword">if</span> (<span class="literal">false</span> == flag)</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (events[i].events &amp; (EPOLLRDHUP | EPOLLHUP | EPOLLERR))</span><br><span class="line">            &#123;</span><br><span class="line">                util_timer *timer = users_timer[sockfd].timer;</span><br><span class="line">                <span class="built_in">deal_timer</span>(timer, sockfd);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((sockfd == m_pipefd[<span class="number">0</span>]) &amp;&amp; (events[i].events &amp; EPOLLIN))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="type">bool</span> flag = <span class="built_in">dealwithsignal</span>(timeout, stop_server);</span><br><span class="line">                <span class="keyword">if</span> (<span class="literal">false</span> == flag)</span><br><span class="line">                    <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;%s&quot;</span>, <span class="string">&quot;dealclientdata failure&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (events[i].events &amp; EPOLLIN)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">dealwithread</span>(sockfd);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (events[i].events &amp; EPOLLOUT)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">dealwithwrite</span>(sockfd);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (timeout)</span><br><span class="line">        &#123;</span><br><span class="line">            utils.<span class="built_in">timer_handler</span>();</span><br><span class="line">            <span class="built_in">LOG_INFO</span>(<span class="string">&quot;%s&quot;</span>, <span class="string">&quot;timer tick&quot;</span>);</span><br><span class="line">            timeout = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在eventLoop函数中，服务器主线程调用epoll_wait函数监听是否有事件响应，返回值number为准备就绪事件的数量，当number大于0时，遍历events集合，其内部存放准备就绪的事件。如果是m_listenfd，说明有新的客户连接产生，此时调用dealclientdata函数接收并处理请求；如果与指定信号相与为真，说明是服务器端关闭连接，此时需要移除对应的定时器；如果为m_pipefd[0]，说明有信号产生，此时调用dealwithsignal函数处理信号；如果与EPOLLIN相与为真，说明是客户端发送数据，此时调用dealwithread函数处理http请求数据；如果与EPOLLOUT相与为真，说明需要向客户端发送数据，此时调用dealwithwrite函数处理http响应数据。</p>
+<h3 id="处理新的客户端连接"><a href="#处理新的客户端连接" class="headerlink" title="处理新的客户端连接"></a>处理新的客户端连接</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">WebServer::dealclinetdata</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> client_address;</span><br><span class="line">    <span class="type">socklen_t</span> client_addrlength = <span class="built_in">sizeof</span>(client_address);</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> == m_LISTENTrigmode)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">int</span> connfd = <span class="built_in">accept</span>(m_listenfd, (<span class="keyword">struct</span> sockaddr *)&amp;client_address, &amp;client_addrlength);</span><br><span class="line">        <span class="keyword">if</span> (connfd &lt; <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;%s:errno is:%d&quot;</span>, <span class="string">&quot;accept error&quot;</span>, errno);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (http_conn::m_user_count &gt;= MAX_FD)</span><br><span class="line">        &#123;</span><br><span class="line">            utils.<span class="built_in">show_error</span>(connfd, <span class="string">&quot;Internal server busy&quot;</span>);</span><br><span class="line">            <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;%s&quot;</span>, <span class="string">&quot;Internal server busy&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">timer</span>(connfd, client_address);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span>  </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="type">int</span> connfd = <span class="built_in">accept</span>(m_listenfd, (<span class="keyword">struct</span> sockaddr *)&amp;client_address, &amp;client_addrlength);</span><br><span class="line">            <span class="keyword">if</span> (connfd &lt; <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;%s:errno is:%d&quot;</span>, <span class="string">&quot;accept error&quot;</span>, errno);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (http_conn::m_user_count &gt;= MAX_FD)</span><br><span class="line">            &#123;</span><br><span class="line">                utils.<span class="built_in">show_error</span>(connfd, <span class="string">&quot;Internal server busy&quot;</span>);</span><br><span class="line">                <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;%s&quot;</span>, <span class="string">&quot;Internal server busy&quot;</span>);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">timer</span>(connfd, client_address);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>dealclientdata函数用于处理新的客户端连接请求，通过m_LISTENTrigmode标志判断LT&#x2F;ET模式，默认为LT模式，此时无需一次性读完，当标志为1时，表示为ET模式，此时需要一次性读完，所以需要通过while循环调用accept函数接收客户端请求数据，当没有数据可读时结束循环。</p>
+<h3 id="处理信号函数"><a href="#处理信号函数" class="headerlink" title="处理信号函数"></a>处理信号函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">WebServer::dealwithsignal</span><span class="params">(<span class="type">bool</span> &amp;timeout, <span class="type">bool</span> &amp;stop_server)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> ret = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> sig;</span><br><span class="line">    <span class="type">char</span> signals[<span class="number">1024</span>];</span><br><span class="line">    ret = <span class="built_in">recv</span>(m_pipefd[<span class="number">0</span>], signals, <span class="built_in">sizeof</span>(signals), <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (ret == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; ret; ++i)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">switch</span> (signals[i])</span><br><span class="line">            &#123;</span><br><span class="line">            <span class="keyword">case</span> SIGALRM:</span><br><span class="line">            &#123;</span><br><span class="line">                timeout = <span class="literal">true</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">case</span> SIGTERM:</span><br><span class="line">            &#123;</span><br><span class="line">                stop_server = <span class="literal">true</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>dealwithsignal函数用于处理通过管道发送的信号，主要有SIGALRM和SIGTERM信号。</p>
+<h3 id="处理http请求数据"><a href="#处理http请求数据" class="headerlink" title="处理http请求数据"></a>处理http请求数据</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WebServer::dealwithread</span><span class="params">(<span class="type">int</span> sockfd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    util_timer *timer = users_timer[sockfd].timer;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">1</span> == m_actormodel)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (timer)</span><br><span class="line">            <span class="built_in">adjust_timer</span>(timer);</span><br><span class="line">        m_pool-&gt;<span class="built_in">append</span>(users + sockfd, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="number">1</span> == users[sockfd].improv)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (<span class="number">1</span> == users[sockfd].timer_flag)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="built_in">deal_timer</span>(timer, sockfd);</span><br><span class="line">                    users[sockfd].timer_flag = <span class="number">0</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                users[sockfd].improv = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (users[sockfd].<span class="built_in">read_once</span>())</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">LOG_INFO</span>(<span class="string">&quot;deal with the client(%s)&quot;</span>, <span class="built_in">inet_ntoa</span>(users[sockfd].<span class="built_in">get_address</span>()-&gt;sin_addr));</span><br><span class="line">            m_pool-&gt;<span class="built_in">append_p</span>(users + sockfd);</span><br><span class="line">            <span class="keyword">if</span> (timer)</span><br><span class="line">                <span class="built_in">adjust_timer</span>(timer);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="built_in">deal_timer</span>(timer, sockfd);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>dealwithread函数用于处理http请求数据，m_actormodel标志用于判断工作模式，默认为reactor模型，此时调用append函数将事件放入请求队列中，此时需要传入参数0，将m_state标志置0，表示为读事件；当m_actormodel标志为1时，表示是proactor模型，同样调用append_p函数将事件放入请求队列中。</p>
+<h3 id="处理http响应数据"><a href="#处理http响应数据" class="headerlink" title="处理http响应数据"></a>处理http响应数据</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WebServer::dealwithwrite</span><span class="params">(<span class="type">int</span> sockfd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    util_timer *timer = users_timer[sockfd].timer;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">1</span> == m_actormodel)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (timer)</span><br><span class="line">            <span class="built_in">adjust_timer</span>(timer);</span><br><span class="line">        m_pool-&gt;<span class="built_in">append</span>(users + sockfd, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="number">1</span> == users[sockfd].improv)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (<span class="number">1</span> == users[sockfd].timer_flag)</span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="built_in">deal_timer</span>(timer, sockfd);</span><br><span class="line">                    users[sockfd].timer_flag = <span class="number">0</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                users[sockfd].improv = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (users[sockfd].<span class="built_in">write</span>())</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">LOG_INFO</span>(<span class="string">&quot;send data to the client(%s)&quot;</span>, <span class="built_in">inet_ntoa</span>(users[sockfd].<span class="built_in">get_address</span>()-&gt;sin_addr));</span><br><span class="line">            <span class="keyword">if</span> (timer)</span><br><span class="line">                <span class="built_in">adjust_timer</span>(timer);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="built_in">deal_timer</span>(timer, sockfd);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>dealwithwrite函数用于处理http响应数据，m_actormodel标志用于判断工作模式，默认为reactor模型，此时调用append函数将事件放入请求队列中，此时需要传入参数1，将m_state标志置1，表示为写事件；当m_actormodel标志为1时，表示是proactor模型，此时直接调用write函数。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/" rel="tag"># -学习日志</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/20/http%E5%A4%84%E7%90%86%E7%B1%BB/" rel="prev" title="http处理类">
+      <i class="fa fa-chevron-left"></i> http处理类
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">整体概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Socket%E9%80%9A%E4%BF%A1"><span class="nav-number">2.1.</span> <span class="nav-text">Socket通信</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E8%8A%82%E5%BA%8F"><span class="nav-number">2.2.</span> <span class="nav-text">字节序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80API"><span class="nav-number">3.</span> <span class="nav-text">基础API</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAsocket"><span class="nav-number">3.1.</span> <span class="nav-text">创建socket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AEsocket"><span class="nav-number">3.2.</span> <span class="nav-text">设置socket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%91%E5%AE%9Asocket"><span class="nav-number">3.3.</span> <span class="nav-text">绑定socket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%91%E5%90%ACsocket"><span class="nav-number">3.4.</span> <span class="nav-text">监听socket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9E%E6%8E%A5socket"><span class="nav-number">3.5.</span> <span class="nav-text">连接socket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6socket"><span class="nav-number">3.6.</span> <span class="nav-text">接收socket</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%AE%A1%E9%81%93%E9%80%9A%E4%BF%A1"><span class="nav-number">3.7.</span> <span class="nav-text">创建管道通信</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">4.</span> <span class="nav-text">核心代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F"><span class="nav-number">4.1.</span> <span class="nav-text">类成员变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E7%9A%84%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">4.2.</span> <span class="nav-text">类的构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E7%9A%84%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0"><span class="nav-number">4.3.</span> <span class="nav-text">类的析构函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%80%E5%90%AF%E6%97%A5%E5%BF%97"><span class="nav-number">4.4.</span> <span class="nav-text">开启日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0"><span class="nav-number">4.5.</span> <span class="nav-text">建立数据库连接池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">4.6.</span> <span class="nav-text">建立线程池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8Bepoll%E7%9B%91%E5%90%AC"><span class="nav-number">4.7.</span> <span class="nav-text">建立epoll监听</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86epoll%E7%9B%91%E5%90%AC%E4%BA%8B%E4%BB%B6%E9%98%9F%E5%88%97"><span class="nav-number">4.8.</span> <span class="nav-text">处理epoll监听事件队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E6%96%B0%E7%9A%84%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%BF%9E%E6%8E%A5"><span class="nav-number">4.9.</span> <span class="nav-text">处理新的客户端连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E4%BF%A1%E5%8F%B7%E5%87%BD%E6%95%B0"><span class="nav-number">4.10.</span> <span class="nav-text">处理信号函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86http%E8%AF%B7%E6%B1%82%E6%95%B0%E6%8D%AE"><span class="nav-number">4.11.</span> <span class="nav-text">处理http请求数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86http%E5%93%8D%E5%BA%94%E6%95%B0%E6%8D%AE"><span class="nav-number">4.12.</span> <span class="nav-text">处理http响应数据</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gong luyang"
+      src="/images/%E5%A4%B4%E5%83%8F.png">
+  <p class="site-author-name" itemprop="name">gong luyang</p>
+  <div class="site-description" itemprop="description">learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/glyhust" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;glyhust" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gly_hk@163.com" title="E-Mail → mailto:gly_hk@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gong luyang</span>
+</div>
+
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  <div class="bg_content">
+  <canvas id="canvas"></canvas>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/dynamic_bg.js"></script>
