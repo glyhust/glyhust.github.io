@@ -142,118 +142,6 @@
       </tags>
   </entry>
   <entry>
-    <title>main主函数</title>
-    <url>/2022/03/01/main%E4%B8%BB%E5%87%BD%E6%95%B0/</url>
-    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><span id="more"></span>
-<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="新建WebServer类对象"><a href="#新建WebServer类对象" class="headerlink" title="新建WebServer类对象"></a>新建WebServer类对象</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">WebServer server;</span><br></pre></td></tr></table></figure>
-<p>新建WebServer类，通过构造函数初始化以下变量：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">m_log_write = <span class="number">0</span>;           <span class="comment">//写日志模式，默认为同步</span></span><br><span class="line">m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br></pre></td></tr></table></figure>
-<h3 id="开启日志"><a href="#开启日志" class="headerlink" title="开启日志"></a>开启日志</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">log_write</span>();</span><br></pre></td></tr></table></figure>
-<p>调用Log类的init初始化函数。</p>
-<h3 id="建立数据库连接池"><a href="#建立数据库连接池" class="headerlink" title="建立数据库连接池"></a>建立数据库连接池</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">sql_pool</span>();</span><br></pre></td></tr></table></figure>
-<p>调用conection_poll类的init初始化函数，并调用数据库的initmysql_result函数，取得用户名、密码。</p>
-<h3 id="建立线程池"><a href="#建立线程池" class="headerlink" title="建立线程池"></a>建立线程池</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">thread_pool</span>();</span><br></pre></td></tr></table></figure>
-<p>在线程池中新建指定数量的线程。</p>
-<h3 id="建立epoll监听套接字"><a href="#建立epoll监听套接字" class="headerlink" title="建立epoll监听套接字"></a>建立epoll监听套接字</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">eventListen</span>();</span><br></pre></td></tr></table></figure>
-<p>建立socket套接字，调用epoll函数监听。</p>
-<h3 id="处理epoll响应事件"><a href="#处理epoll响应事件" class="headerlink" title="处理epoll响应事件"></a>处理epoll响应事件</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">eventLoop</span>();</span><br></pre></td></tr></table></figure>
-<p>处理epoll函数返回的响应事件集合。</p>
-]]></content>
-      <categories>
-        <category>webserver</category>
-      </categories>
-      <tags>
-        <tag>学习日志</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>定时器</title>
-    <url>/2022/03/15/%E5%AE%9A%E6%97%B6%E5%99%A8/</url>
-    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>服务器主循环为每一个连接创建一个定时器，并对每个连接进行定时，利用升序时间链表容器将所有定时器串联起来，若主循环接收到定时通知，则在链表中依次执行定时任务。本项目利用alarm函数周期性触发SIGALRM信号，信号处理函数利用管道通知主循环，主循环接受到该信号后对升序链表上所有定时器进行处理。若该段时间内没有交换出具，则将该连接关闭，释放所占用的资源。<br><a href="https://imgtu.com/i/OMytEj"><img src="https://s1.ax1x.com/2022/05/07/OMytEj.png" alt="定时器"></a></p>
-<span id="more"></span>
-<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p><strong>定时事件</strong>：固定一段时间之后触发某段代码，由该段代码处理一个事件。<br><strong>非活跃事件</strong>：客户端与服务器端建立连接后，长时间不交换数据，一直占用服务端的文件描述符，导致连接资源的浪费。<br><strong>定时器</strong>：将定时事件与连接资源封装为一个结构体定时器。</p>
-<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="epoll-event结构体"><a href="#epoll-event结构体" class="headerlink" title="epoll_event结构体"></a>epoll_event结构体</h3><p>用于注册所感兴趣的事件和回传所发送待处理的事件，定义如下</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">union</span> <span class="title class_">epoll_data</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> *ptr;</span><br><span class="line">    <span class="type">int</span> fd;</span><br><span class="line">    <span class="type">__uint32_t</span> u32;</span><br><span class="line">    <span class="type">__uint64_t</span> u64;</span><br><span class="line">&#125; <span class="type">epoll_data_t</span>;<span class="comment">//保存触发事件的某个文件描述符相关的数据</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">epoll_event</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">__uint32_t</span> events;      <span class="comment">/* epoll event */</span></span><br><span class="line">    <span class="type">epoll_data_t</span> data;      <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>其中events表示感兴趣的事件和被触发的事件，可能的取值有：</p>
-<ul>
-<li>EPOLLIN：文件描述符可以读；</li>
-<li>EPOLLOUT：文件描述符可以写；</li>
-<li>EPOLLPRI：文件描述符有紧急的数可读；</li>
-<li>EPOLLERR：文件描述符发生错误；</li>
-<li>EPOLLHUP：文件描述符被挂断；</li>
-<li>EPOLLET：ET的epoll工作模式；</li>
-</ul>
-<h3 id="LT-x2F-ET工作模式"><a href="#LT-x2F-ET工作模式" class="headerlink" title="LT&#x2F;ET工作模式"></a>LT&#x2F;ET工作模式</h3><p>与poll的事件宏相比，epoll新增了一个事件宏EPOLLET，这就是所谓的边缘触发模式（Edge Trigger，ET），而默认的模式我们称为水平触发模式（Level Trigger，LT）。这两种模式的区别在于：对于水平触发模式，一个事件只要有，就会一直触发；对于边缘触发模式，只有一个事件从无到有才会触发。这两个词汇来自电学术语，你可以将fd上有数据认为是高电平，没有数据认为是低电平，将fd可写认为是高电平，fd不可写认为是低电平。那么水平模式的触发条件是状态处于高电平，而边缘模式的触发条件是新来一次电信号将当前状态变为高电平。<br>以socket的读事件为例，对于水平模式，只要socket上有未读完的数据，就会一直产生EPOLLIN 事件；而对于边缘模式，socket上每新来一次数据就会触发一次，如果上一次触发后，未将socket上的数据读完，也不会再触发，除非再新来一次数据。也就是说，如果对于一个非阻塞socket，如果使用epoll边缘模式去检测数据是否可读，触发可读事件以后，一定要一次性把socket上的数据收取干净才行，也就是说一定要循环调用recv函数直到recv出错，错误码是EWOULDBLOCK（EAGAIN 一样）（此时表示socket上本次数据已经读完）；如果使用水平模式，则不用，你可以根据业务一次性收取固定的字节数，或者收完为止。</p>
-<h3 id="EPOLLONESHOT事件"><a href="#EPOLLONESHOT事件" class="headerlink" title="EPOLLONESHOT事件"></a>EPOLLONESHOT事件</h3><p>epoll模型的ET模式一般来说只触发一次，然而在并发程序中有特殊情况的存在，譬如当epoll_wait已经检测到socket描述符fd1，并通知应用程序处理fd1的数据，那么处理过程中该fd1又有新的数据可读，会唤醒其他线程对fd1进行操作，那么就出现了两个工作线程同时处理fd1的情况，这当然不是我们期望看到的。而epolloneshot事件规定操作系统最多触发其上注册的一个可读或者可写或者异常事件，且只触发一次，如此无论线程再多，只能有一个线程或进程处理同一个描述符。当然处理完之后线程要重置这个epolloneshot事件，进而当此描述符有事件可读时让其他进程可以处理此描述符。</p>
-<h3 id="fcntl函数"><a href="#fcntl函数" class="headerlink" title="fcntl函数"></a>fcntl函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, <span class="type">long</span> arg)</span></span>;         </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, <span class="keyword">struct</span> flock *lock)</span></span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>作用：操作文件描述符的一些特性</li>
-<li>参数：<ul>
-<li>fd：欲设置的文件描述符</li>
-<li>cmd：欲操作的指令<ul>
-<li>F_DUPFD：用来查找大于或等于参数arg的最小且仍未使用的文件描述词，并且复制参数fd的文件描述词，执行成功则返回新复制的文件描述词；</li>
-<li>F_GETFD：取得close-on-exec 旗标，若此旗标的FD_CLOEXEC 位为0, 代表在调用exec()相关函数时文件将不会关闭；</li>
-<li>F_SETFD：设置close-on-exec 旗标，该旗标以参数arg 的FD_CLOEXEC位决定；</li>
-<li>F_GETFL：取得文件描述词状态旗标，此旗标为open()的参数flags；</li>
-<li>F_SETFL：设置文件描述词状态旗标，参数arg为新旗标，但只允许O_APPEND、O_NONBLOCK（非阻塞IO）和O_ASYNC位的改变，其他位的改变将不受影响；</li>
-<li>F_GETLK：取得文件锁定的状态；</li>
-<li>F_SETLK：设置文件锁定的状态，此时flcok结构的l_type值必须是F_RDLCK、F_WRLCK 或F_UNLCK，如果无法建立锁定，则返回-1，错误代码为EACCES或EAGAIN；</li>
-<li>F_SETLKW：同F_SETLK作用相同，但是无法建立锁定时，此调用会一直等到锁定动作成功为止，若在等待锁定的过程中被信号中断时，会立即返回-1，错误代码为EINTR，参数lock指针为flock 结构指针；</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>返回值：成功则返回0，若有错误则返回-1，错误原因存于errno；</li>
-</ul>
-<h3 id="sigaction函数与结构体"><a href="#sigaction函数与结构体" class="headerlink" title="sigaction函数与结构体"></a>sigaction函数与结构体</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sigaction</span><span class="params">(<span class="type">int</span> signum,<span class="type">const</span> <span class="keyword">struct</span> sigaction *act,<span class="type">const</span> <span class="keyword">struct</span> sigaction *old)</span></span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>作用：改变进程接收到特定信号后的行为；</li>
-<li>参数：<ul>
-<li>signum：信号的值，可以为除sigkill及sigstop外的任何一个特定有效的信号；</li>
-<li>act：指向结构sigaction的一个实例的指针，在结构sigaction的实例中，指定了对特定信号的处理，可以为空，进程会以缺省方式对信号处理；</li>
-<li>old：指向的对象用来保存原来对相应信号的处理，可以传入结构sigaction的指针来获取之前对信号处理情况，如果不需要保存可指定oldact为null。</li>
-</ul>
-</li>
-<li>返回值：函数成功返回0，失败返回-1；</li>
-</ul>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">sigaction</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">void</span> (*sa_handler)(<span class="type">int</span>);</span><br><span class="line">    <span class="built_in">void</span> (*sa_sigaction)(<span class="type">int</span>, <span class="type">siginfo_t</span> *, <span class="type">void</span> *);</span><br><span class="line">    <span class="type">sigset_t</span> sa_mask;</span><br><span class="line">    <span class="type">int</span> sa_flags;</span><br><span class="line">    <span class="built_in">void</span> (*sa_restorer)(<span class="type">void</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>sa_handler：一个函数指针，指向信号处理函数；</li>
-<li>sa_sigaction：同样是信号处理函数，有三个参数，可以获得关于信号更详细的信息；</li>
-<li>sa_mask：用来指定在信号处理函数执行期间需要被屏蔽的信号；</li>
-<li>sa_flags：用于指定信号处理的行为；<ul>
-<li>SA_RESTART：使被信号打断的系统调用自动重新发起；</li>
-<li>SA_NOCLDSTOP：使父进程在它的子进程暂停或继续运行时不会收到SIGCHLD信号；</li>
-<li>SA_NOCLDWAIT：使父进程在它的子进程退出时不会收到SIGCHLD信号，这时子进程如果退出也不会成为僵尸进程；</li>
-<li>SA_NODEFER：使对信号的屏蔽无效，即在信号处理函数执行期间仍能发出这个信号；</li>
-<li>SA_RESETHAND：信号处理之后重新设置为默认的处理方式；</li>
-<li>SA_SIGINFO：使用sa_sigaction成员而不是sa_handler作为信号处理函数；</li>
-</ul>
-</li>
-<li>sa_restorer：一般不使用；</li>
-</ul>
-<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="定时器类"><a href="#定时器类" class="headerlink" title="定时器类"></a>定时器类</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">util_timer</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">time_t</span> expire;                 <span class="comment">//超时时间</span></span><br><span class="line">    <span class="built_in">void</span> (*cb_func)(client_data*); <span class="comment">//回调函数</span></span><br><span class="line">    client_data* user_data;        <span class="comment">//连接资源</span></span><br><span class="line">    util_timer* prev;              <span class="comment">//前向定时器</span></span><br><span class="line">    util_timer* next;              <span class="comment">//后继定时器</span></span><br><span class="line">    <span class="built_in">util_timer</span>():<span class="built_in">prev</span>(<span class="literal">NULL</span>),<span class="built_in">next</span>(<span class="literal">NULL</span>)&#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h3 id="连接资源结构体"><a href="#连接资源结构体" class="headerlink" title="连接资源结构体"></a>连接资源结构体</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">client_data</span></span><br><span class="line">&#123;</span><br><span class="line">    sockaddr_in address; <span class="comment">//客户端socket地址</span></span><br><span class="line">    <span class="type">int</span> sockfd;          <span class="comment">//socket文件描述符</span></span><br><span class="line">    util_timer* timer;   <span class="comment">//定时器类</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h3 id="向定时器链表中添加定时器"><a href="#向定时器链表中添加定时器" class="headerlink" title="向定时器链表中添加定时器"></a>向定时器链表中添加定时器</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">sort_timer_lst::add_timer</span><span class="params">(util_timer* timer)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!timer)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span>(!head)</span><br><span class="line">    &#123;</span><br><span class="line">        head=tail=timer;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(timer-&gt;expire&lt;head-&gt;expire)</span><br><span class="line">    &#123;</span><br><span class="line">        timer-&gt;next=head;</span><br><span class="line">        head-&gt;prev=timer;</span><br><span class="line">        head=timer;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">add_timer</span>(timer,head);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果新的定时器超时时间timer-&gt;expire小于当前头部结点超时时间head-&gt;expire，则直接将当前定时器结点作为头部结点。否则就调用私有成员函数add_timer，找出定时器链表中大于新的定时器超时时间的结点，再进行插入操作。</p>
-<h3 id="定时任务处理函数"><a href="#定时任务处理函数" class="headerlink" title="定时任务处理函数"></a>定时任务处理函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">sort_timer_lst::tick</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!head)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="type">time_t</span> cur=<span class="built_in">time</span>(<span class="literal">NULL</span>);</span><br><span class="line">    util_timer* temp=head;</span><br><span class="line">    <span class="keyword">while</span>(temp)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(cur&lt;temp-&gt;expire)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        temp-&gt;<span class="built_in">cb_func</span>(temp-&gt;user_data);</span><br><span class="line">        head=temp-&gt;next;</span><br><span class="line">        <span class="keyword">if</span>(head)</span><br><span class="line">            head-&gt;prev=<span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">delete</span> temp;</span><br><span class="line">        temp=head;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>首先获取当前时间，之后通过while循环遍历定时器链表。因为链表为升序排列，所以如果当前时间小于定时器的超时时间，则后面的定时器也没有到期。如果当前定时器到期，则调用回调函数，执行定时事件，并将处理后的定时器从链表容器中删除，重置头结点。</p>
-<h3 id="定时器回调函数"><a href="#定时器回调函数" class="headerlink" title="定时器回调函数"></a>定时器回调函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">cb_func</span><span class="params">(client_data* user_data)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">epoll_ctl</span>(Utils::u_epollfd,EPOLL_CTL_DEL,user_data-&gt;sockfd,<span class="number">0</span>);</span><br><span class="line">    <span class="built_in">assert</span>(user_data);</span><br><span class="line">    <span class="built_in">close</span>(user_data-&gt;sockfd);</span><br><span class="line">    http_conn::m_user_count--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>删除非活动连接在socket上的注册事件，关闭文件描述符，减少连接数。</p>
-<h3 id="注册读事件"><a href="#注册读事件" class="headerlink" title="注册读事件"></a>注册读事件</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Utils::addfd</span><span class="params">(<span class="type">int</span> epollfd, <span class="type">int</span> fd, <span class="type">bool</span> one_shot, <span class="type">int</span> TRIGMode)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    epoll_event event;</span><br><span class="line">    event.data.fd = fd;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">1</span> == TRIGMode)</span><br><span class="line">        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        event.events = EPOLLIN | EPOLLRDHUP;</span><br><span class="line">    <span class="keyword">if</span> (one_shot)</span><br><span class="line">        event.events |= EPOLLONESHOT;</span><br><span class="line">    <span class="built_in">epoll_ctl</span>(epollfd, EPOLL_CTL_ADD, fd, &amp;event);</span><br><span class="line">    <span class="built_in">setnonblocking</span>(fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>one_shot为是否开始EPOLLONESHOT标志，TRIGMode为ET&#x2F;LT模式切换标志，为1表示ET模式，为0表示LT模式，通过events的异或操作添加相关状态。setnonblocking函数将fd设置为非阻塞状态。</p>
-<h3 id="设置信号函数"><a href="#设置信号函数" class="headerlink" title="设置信号函数"></a>设置信号函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Utils::addsig</span><span class="params">(<span class="type">int</span> sig,<span class="type">void</span>(handler)(<span class="type">int</span>),<span class="type">bool</span> restart)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sigaction</span> sa;</span><br><span class="line">    <span class="built_in">memset</span>(&amp;sa,<span class="string">&#x27;\0&#x27;</span>,<span class="built_in">sizeof</span>(sa));</span><br><span class="line">    sa.sa_handler=handler;</span><br><span class="line">    <span class="keyword">if</span>(restart)</span><br><span class="line">        sa.sa_flags|=SA_RESTART;</span><br><span class="line">    <span class="built_in">sigfillset</span>(&amp;sa.sa_mask);  </span><br><span class="line">    <span class="built_in">assert</span>(<span class="built_in">sigaction</span>(sig,&amp;sa,<span class="literal">NULL</span>)!=<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>addsig函数对sig信号的处理函数设置为handler，当restart标志为真时，添加SA_RESTART信号，表示使被信号打断的系统调用自动重新发起。</p>
-]]></content>
-      <categories>
-        <category>webserver</category>
-      </categories>
-      <tags>
-        <tag>学习日志</tag>
-        <tag>定时器</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>http处理类</title>
     <url>/2022/03/20/http%E5%A4%84%E7%90%86%E7%B1%BB/</url>
     <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>浏览器端发出http连接请求，主线程创建http对象接收请求并将所有数据读入对应buffer，将该对象插入任务队列，工作线程从任务队列中取出一个任务进行处理。工作线程取出任务后，调用process_read函数，通过主、从状态机对请求报文进行解析。解析完之后，跳转do_request函数生成响应报文，通过process_write写入buffer，返回给浏览器端。<br><a href="https://imgtu.com/i/OQV1rd"><img src="https://s1.ax1x.com/2022/05/07/OQV1rd.png" alt="http类"></a></p>
@@ -527,6 +415,118 @@
       <tags>
         <tag>学习日志</tag>
         <tag>http处理类</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>main主函数</title>
+    <url>/2022/03/01/main%E4%B8%BB%E5%87%BD%E6%95%B0/</url>
+    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="新建WebServer类对象"><a href="#新建WebServer类对象" class="headerlink" title="新建WebServer类对象"></a>新建WebServer类对象</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">WebServer server;</span><br></pre></td></tr></table></figure>
+<p>新建WebServer类，通过构造函数初始化以下变量：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">m_log_write = <span class="number">0</span>;           <span class="comment">//写日志模式，默认为同步</span></span><br><span class="line">m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br></pre></td></tr></table></figure>
+<h3 id="开启日志"><a href="#开启日志" class="headerlink" title="开启日志"></a>开启日志</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">log_write</span>();</span><br></pre></td></tr></table></figure>
+<p>调用Log类的init初始化函数。</p>
+<h3 id="建立数据库连接池"><a href="#建立数据库连接池" class="headerlink" title="建立数据库连接池"></a>建立数据库连接池</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">sql_pool</span>();</span><br></pre></td></tr></table></figure>
+<p>调用conection_poll类的init初始化函数，并调用数据库的initmysql_result函数，取得用户名、密码。</p>
+<h3 id="建立线程池"><a href="#建立线程池" class="headerlink" title="建立线程池"></a>建立线程池</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">thread_pool</span>();</span><br></pre></td></tr></table></figure>
+<p>在线程池中新建指定数量的线程。</p>
+<h3 id="建立epoll监听套接字"><a href="#建立epoll监听套接字" class="headerlink" title="建立epoll监听套接字"></a>建立epoll监听套接字</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">eventListen</span>();</span><br></pre></td></tr></table></figure>
+<p>建立socket套接字，调用epoll函数监听。</p>
+<h3 id="处理epoll响应事件"><a href="#处理epoll响应事件" class="headerlink" title="处理epoll响应事件"></a>处理epoll响应事件</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">eventLoop</span>();</span><br></pre></td></tr></table></figure>
+<p>处理epoll函数返回的响应事件集合。</p>
+]]></content>
+      <categories>
+        <category>webserver</category>
+      </categories>
+      <tags>
+        <tag>学习日志</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>定时器</title>
+    <url>/2022/03/15/%E5%AE%9A%E6%97%B6%E5%99%A8/</url>
+    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>服务器主循环为每一个连接创建一个定时器，并对每个连接进行定时，利用升序时间链表容器将所有定时器串联起来，若主循环接收到定时通知，则在链表中依次执行定时任务。本项目利用alarm函数周期性触发SIGALRM信号，信号处理函数利用管道通知主循环，主循环接受到该信号后对升序链表上所有定时器进行处理。若该段时间内没有交换出具，则将该连接关闭，释放所占用的资源。<br><a href="https://imgtu.com/i/OMytEj"><img src="https://s1.ax1x.com/2022/05/07/OMytEj.png" alt="定时器"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p><strong>定时事件</strong>：固定一段时间之后触发某段代码，由该段代码处理一个事件。<br><strong>非活跃事件</strong>：客户端与服务器端建立连接后，长时间不交换数据，一直占用服务端的文件描述符，导致连接资源的浪费。<br><strong>定时器</strong>：将定时事件与连接资源封装为一个结构体定时器。</p>
+<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="epoll-event结构体"><a href="#epoll-event结构体" class="headerlink" title="epoll_event结构体"></a>epoll_event结构体</h3><p>用于注册所感兴趣的事件和回传所发送待处理的事件，定义如下</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">union</span> <span class="title class_">epoll_data</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> *ptr;</span><br><span class="line">    <span class="type">int</span> fd;</span><br><span class="line">    <span class="type">__uint32_t</span> u32;</span><br><span class="line">    <span class="type">__uint64_t</span> u64;</span><br><span class="line">&#125; <span class="type">epoll_data_t</span>;<span class="comment">//保存触发事件的某个文件描述符相关的数据</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">epoll_event</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">__uint32_t</span> events;      <span class="comment">/* epoll event */</span></span><br><span class="line">    <span class="type">epoll_data_t</span> data;      <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>其中events表示感兴趣的事件和被触发的事件，可能的取值有：</p>
+<ul>
+<li>EPOLLIN：文件描述符可以读；</li>
+<li>EPOLLOUT：文件描述符可以写；</li>
+<li>EPOLLPRI：文件描述符有紧急的数可读；</li>
+<li>EPOLLERR：文件描述符发生错误；</li>
+<li>EPOLLHUP：文件描述符被挂断；</li>
+<li>EPOLLET：ET的epoll工作模式；</li>
+</ul>
+<h3 id="LT-x2F-ET工作模式"><a href="#LT-x2F-ET工作模式" class="headerlink" title="LT&#x2F;ET工作模式"></a>LT&#x2F;ET工作模式</h3><p>与poll的事件宏相比，epoll新增了一个事件宏EPOLLET，这就是所谓的边缘触发模式（Edge Trigger，ET），而默认的模式我们称为水平触发模式（Level Trigger，LT）。这两种模式的区别在于：对于水平触发模式，一个事件只要有，就会一直触发；对于边缘触发模式，只有一个事件从无到有才会触发。这两个词汇来自电学术语，你可以将fd上有数据认为是高电平，没有数据认为是低电平，将fd可写认为是高电平，fd不可写认为是低电平。那么水平模式的触发条件是状态处于高电平，而边缘模式的触发条件是新来一次电信号将当前状态变为高电平。<br>以socket的读事件为例，对于水平模式，只要socket上有未读完的数据，就会一直产生EPOLLIN 事件；而对于边缘模式，socket上每新来一次数据就会触发一次，如果上一次触发后，未将socket上的数据读完，也不会再触发，除非再新来一次数据。也就是说，如果对于一个非阻塞socket，如果使用epoll边缘模式去检测数据是否可读，触发可读事件以后，一定要一次性把socket上的数据收取干净才行，也就是说一定要循环调用recv函数直到recv出错，错误码是EWOULDBLOCK（EAGAIN 一样）（此时表示socket上本次数据已经读完）；如果使用水平模式，则不用，你可以根据业务一次性收取固定的字节数，或者收完为止。</p>
+<h3 id="EPOLLONESHOT事件"><a href="#EPOLLONESHOT事件" class="headerlink" title="EPOLLONESHOT事件"></a>EPOLLONESHOT事件</h3><p>epoll模型的ET模式一般来说只触发一次，然而在并发程序中有特殊情况的存在，譬如当epoll_wait已经检测到socket描述符fd1，并通知应用程序处理fd1的数据，那么处理过程中该fd1又有新的数据可读，会唤醒其他线程对fd1进行操作，那么就出现了两个工作线程同时处理fd1的情况，这当然不是我们期望看到的。而epolloneshot事件规定操作系统最多触发其上注册的一个可读或者可写或者异常事件，且只触发一次，如此无论线程再多，只能有一个线程或进程处理同一个描述符。当然处理完之后线程要重置这个epolloneshot事件，进而当此描述符有事件可读时让其他进程可以处理此描述符。</p>
+<h3 id="fcntl函数"><a href="#fcntl函数" class="headerlink" title="fcntl函数"></a>fcntl函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, <span class="type">long</span> arg)</span></span>;         </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, <span class="keyword">struct</span> flock *lock)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：操作文件描述符的一些特性</li>
+<li>参数：<ul>
+<li>fd：欲设置的文件描述符</li>
+<li>cmd：欲操作的指令<ul>
+<li>F_DUPFD：用来查找大于或等于参数arg的最小且仍未使用的文件描述词，并且复制参数fd的文件描述词，执行成功则返回新复制的文件描述词；</li>
+<li>F_GETFD：取得close-on-exec 旗标，若此旗标的FD_CLOEXEC 位为0, 代表在调用exec()相关函数时文件将不会关闭；</li>
+<li>F_SETFD：设置close-on-exec 旗标，该旗标以参数arg 的FD_CLOEXEC位决定；</li>
+<li>F_GETFL：取得文件描述词状态旗标，此旗标为open()的参数flags；</li>
+<li>F_SETFL：设置文件描述词状态旗标，参数arg为新旗标，但只允许O_APPEND、O_NONBLOCK（非阻塞IO）和O_ASYNC位的改变，其他位的改变将不受影响；</li>
+<li>F_GETLK：取得文件锁定的状态；</li>
+<li>F_SETLK：设置文件锁定的状态，此时flcok结构的l_type值必须是F_RDLCK、F_WRLCK 或F_UNLCK，如果无法建立锁定，则返回-1，错误代码为EACCES或EAGAIN；</li>
+<li>F_SETLKW：同F_SETLK作用相同，但是无法建立锁定时，此调用会一直等到锁定动作成功为止，若在等待锁定的过程中被信号中断时，会立即返回-1，错误代码为EINTR，参数lock指针为flock 结构指针；</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>返回值：成功则返回0，若有错误则返回-1，错误原因存于errno；</li>
+</ul>
+<h3 id="sigaction函数与结构体"><a href="#sigaction函数与结构体" class="headerlink" title="sigaction函数与结构体"></a>sigaction函数与结构体</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sigaction</span><span class="params">(<span class="type">int</span> signum,<span class="type">const</span> <span class="keyword">struct</span> sigaction *act,<span class="type">const</span> <span class="keyword">struct</span> sigaction *old)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：改变进程接收到特定信号后的行为；</li>
+<li>参数：<ul>
+<li>signum：信号的值，可以为除sigkill及sigstop外的任何一个特定有效的信号；</li>
+<li>act：指向结构sigaction的一个实例的指针，在结构sigaction的实例中，指定了对特定信号的处理，可以为空，进程会以缺省方式对信号处理；</li>
+<li>old：指向的对象用来保存原来对相应信号的处理，可以传入结构sigaction的指针来获取之前对信号处理情况，如果不需要保存可指定oldact为null。</li>
+</ul>
+</li>
+<li>返回值：函数成功返回0，失败返回-1；</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">sigaction</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">void</span> (*sa_handler)(<span class="type">int</span>);</span><br><span class="line">    <span class="built_in">void</span> (*sa_sigaction)(<span class="type">int</span>, <span class="type">siginfo_t</span> *, <span class="type">void</span> *);</span><br><span class="line">    <span class="type">sigset_t</span> sa_mask;</span><br><span class="line">    <span class="type">int</span> sa_flags;</span><br><span class="line">    <span class="built_in">void</span> (*sa_restorer)(<span class="type">void</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>sa_handler：一个函数指针，指向信号处理函数；</li>
+<li>sa_sigaction：同样是信号处理函数，有三个参数，可以获得关于信号更详细的信息；</li>
+<li>sa_mask：用来指定在信号处理函数执行期间需要被屏蔽的信号；</li>
+<li>sa_flags：用于指定信号处理的行为；<ul>
+<li>SA_RESTART：使被信号打断的系统调用自动重新发起；</li>
+<li>SA_NOCLDSTOP：使父进程在它的子进程暂停或继续运行时不会收到SIGCHLD信号；</li>
+<li>SA_NOCLDWAIT：使父进程在它的子进程退出时不会收到SIGCHLD信号，这时子进程如果退出也不会成为僵尸进程；</li>
+<li>SA_NODEFER：使对信号的屏蔽无效，即在信号处理函数执行期间仍能发出这个信号；</li>
+<li>SA_RESETHAND：信号处理之后重新设置为默认的处理方式；</li>
+<li>SA_SIGINFO：使用sa_sigaction成员而不是sa_handler作为信号处理函数；</li>
+</ul>
+</li>
+<li>sa_restorer：一般不使用；</li>
+</ul>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="定时器类"><a href="#定时器类" class="headerlink" title="定时器类"></a>定时器类</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">util_timer</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">time_t</span> expire;                 <span class="comment">//超时时间</span></span><br><span class="line">    <span class="built_in">void</span> (*cb_func)(client_data*); <span class="comment">//回调函数</span></span><br><span class="line">    client_data* user_data;        <span class="comment">//连接资源</span></span><br><span class="line">    util_timer* prev;              <span class="comment">//前向定时器</span></span><br><span class="line">    util_timer* next;              <span class="comment">//后继定时器</span></span><br><span class="line">    <span class="built_in">util_timer</span>():<span class="built_in">prev</span>(<span class="literal">NULL</span>),<span class="built_in">next</span>(<span class="literal">NULL</span>)&#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="连接资源结构体"><a href="#连接资源结构体" class="headerlink" title="连接资源结构体"></a>连接资源结构体</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">client_data</span></span><br><span class="line">&#123;</span><br><span class="line">    sockaddr_in address; <span class="comment">//客户端socket地址</span></span><br><span class="line">    <span class="type">int</span> sockfd;          <span class="comment">//socket文件描述符</span></span><br><span class="line">    util_timer* timer;   <span class="comment">//定时器类</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="向定时器链表中添加定时器"><a href="#向定时器链表中添加定时器" class="headerlink" title="向定时器链表中添加定时器"></a>向定时器链表中添加定时器</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">sort_timer_lst::add_timer</span><span class="params">(util_timer* timer)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!timer)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span>(!head)</span><br><span class="line">    &#123;</span><br><span class="line">        head=tail=timer;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(timer-&gt;expire&lt;head-&gt;expire)</span><br><span class="line">    &#123;</span><br><span class="line">        timer-&gt;next=head;</span><br><span class="line">        head-&gt;prev=timer;</span><br><span class="line">        head=timer;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">add_timer</span>(timer,head);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果新的定时器超时时间timer-&gt;expire小于当前头部结点超时时间head-&gt;expire，则直接将当前定时器结点作为头部结点。否则就调用私有成员函数add_timer，找出定时器链表中大于新的定时器超时时间的结点，再进行插入操作。</p>
+<h3 id="定时任务处理函数"><a href="#定时任务处理函数" class="headerlink" title="定时任务处理函数"></a>定时任务处理函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">sort_timer_lst::tick</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!head)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="type">time_t</span> cur=<span class="built_in">time</span>(<span class="literal">NULL</span>);</span><br><span class="line">    util_timer* temp=head;</span><br><span class="line">    <span class="keyword">while</span>(temp)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(cur&lt;temp-&gt;expire)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        temp-&gt;<span class="built_in">cb_func</span>(temp-&gt;user_data);</span><br><span class="line">        head=temp-&gt;next;</span><br><span class="line">        <span class="keyword">if</span>(head)</span><br><span class="line">            head-&gt;prev=<span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">delete</span> temp;</span><br><span class="line">        temp=head;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先获取当前时间，之后通过while循环遍历定时器链表。因为链表为升序排列，所以如果当前时间小于定时器的超时时间，则后面的定时器也没有到期。如果当前定时器到期，则调用回调函数，执行定时事件，并将处理后的定时器从链表容器中删除，重置头结点。</p>
+<h3 id="定时器回调函数"><a href="#定时器回调函数" class="headerlink" title="定时器回调函数"></a>定时器回调函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">cb_func</span><span class="params">(client_data* user_data)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">epoll_ctl</span>(Utils::u_epollfd,EPOLL_CTL_DEL,user_data-&gt;sockfd,<span class="number">0</span>);</span><br><span class="line">    <span class="built_in">assert</span>(user_data);</span><br><span class="line">    <span class="built_in">close</span>(user_data-&gt;sockfd);</span><br><span class="line">    http_conn::m_user_count--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>删除非活动连接在socket上的注册事件，关闭文件描述符，减少连接数。</p>
+<h3 id="注册读事件"><a href="#注册读事件" class="headerlink" title="注册读事件"></a>注册读事件</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Utils::addfd</span><span class="params">(<span class="type">int</span> epollfd, <span class="type">int</span> fd, <span class="type">bool</span> one_shot, <span class="type">int</span> TRIGMode)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    epoll_event event;</span><br><span class="line">    event.data.fd = fd;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">1</span> == TRIGMode)</span><br><span class="line">        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        event.events = EPOLLIN | EPOLLRDHUP;</span><br><span class="line">    <span class="keyword">if</span> (one_shot)</span><br><span class="line">        event.events |= EPOLLONESHOT;</span><br><span class="line">    <span class="built_in">epoll_ctl</span>(epollfd, EPOLL_CTL_ADD, fd, &amp;event);</span><br><span class="line">    <span class="built_in">setnonblocking</span>(fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>one_shot为是否开始EPOLLONESHOT标志，TRIGMode为ET&#x2F;LT模式切换标志，为1表示ET模式，为0表示LT模式，通过events的异或操作添加相关状态。setnonblocking函数将fd设置为非阻塞状态。</p>
+<h3 id="设置信号函数"><a href="#设置信号函数" class="headerlink" title="设置信号函数"></a>设置信号函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Utils::addsig</span><span class="params">(<span class="type">int</span> sig,<span class="type">void</span>(handler)(<span class="type">int</span>),<span class="type">bool</span> restart)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sigaction</span> sa;</span><br><span class="line">    <span class="built_in">memset</span>(&amp;sa,<span class="string">&#x27;\0&#x27;</span>,<span class="built_in">sizeof</span>(sa));</span><br><span class="line">    sa.sa_handler=handler;</span><br><span class="line">    <span class="keyword">if</span>(restart)</span><br><span class="line">        sa.sa_flags|=SA_RESTART;</span><br><span class="line">    <span class="built_in">sigfillset</span>(&amp;sa.sa_mask);  </span><br><span class="line">    <span class="built_in">assert</span>(<span class="built_in">sigaction</span>(sig,&amp;sa,<span class="literal">NULL</span>)!=<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>addsig函数对sig信号的处理函数设置为handler，当restart标志为真时，添加SA_RESTART信号，表示使被信号打断的系统调用自动重新发起。</p>
+]]></content>
+      <categories>
+        <category>webserver</category>
+      </categories>
+      <tags>
+        <tag>学习日志</tag>
+        <tag>定时器</tag>
       </tags>
   </entry>
   <entry>
