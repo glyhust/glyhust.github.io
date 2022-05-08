@@ -3,7 +3,13 @@
   <entry>
     <title>WebServer类</title>
     <url>/2022/03/24/WebServer%E7%B1%BB/</url>
-    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p><a href="https://imgtu.com/i/OQMG6K"><img src="https://s1.ax1x.com/2022/05/07/OQMG6K.png" alt="服务器类"></a></p>
+    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>基于浏览器&#x2F;服务器（B&#x2F;S）模型，实现了Web服务器的基本功能，用户通过浏览器实现，一部分事务逻辑在浏览器实现，主要事务逻辑在服务端实现，主要可以分为三层架构：</p>
+<ul>
+<li>表示层：web浏览器。位于客户端，其任务是通过web浏览器向网络上的某个web服务器提出服务请求</li>
+<li>功能层：具有应用程序扩展功能的web服务器，负责事物逻辑处理，位于web服务器端，其任务是接受用户的请求，进行数据库连接</li>
+<li>数据层：数据库服务器。负责数据处理逻辑，位于数据库服务器端，其任务是接受web服务器对数据库 的操纵请求，实现对数据库查询、修改、更新等功能</li>
+</ul>
+<p><a href="https://imgtu.com/i/OQMG6K"><img src="https://s1.ax1x.com/2022/05/07/OQMG6K.png" alt="服务器类"></a></p>
 <span id="more"></span>
 <h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="Socket通信"><a href="#Socket通信" class="headerlink" title="Socket通信"></a>Socket通信</h3><p>Socket（套接字）用来描述IP地址和端口，是通信链的句柄，应用程序可以通过Socket向网络发送请求或者应答网络请求。Socket是支持TCP&#x2F;IP协议的网络通信的基本操作单元，是对网络通信过程中端点的抽象表示，包含了进行网络通信所必须的五种信息：连接所使用的协议；本地主机的IP地址；本地远程的协议端口；远程主机的IP地址；远程地址的协议端口。在基于TCP协议的Socket通信过程中，服务端首先声明一个Socket对象并指定端口号，然后调用accept方法接受客户端的数据。accept方法在没有数据进行接受时处于堵塞状态；客户端创建Socket对象，执行服务器端的IP地址和端口号，与服务端建立通信。</p>
 <h3 id="字节序"><a href="#字节序" class="headerlink" title="字节序"></a>字节序</h3><p>不同的CPU有不同的字节序类型 这些字节序是指整数在内存中保存的顺序 这个叫做主机字节序，最常见的有两种，小端：将低序字节存储在起始地址；大端：将高序字节存储在起始地址。网络字节顺序是TCP&#x2F;IP中规定好的一种数据表示格式，它与具体的CPU类型、操作系统等无关，从而可以保证数据在不同主机之间传输时能够被正确解释。网络字节顺序采用大端方式。为了在主机字节序和网络字节序中进行转换，提供了四个转换函数：</p>
@@ -142,6 +148,41 @@
       </tags>
   </entry>
   <entry>
+    <title>main主函数</title>
+    <url>/2022/03/01/main%E4%B8%BB%E5%87%BD%E6%95%B0/</url>
+    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>使用C++语言在Linux环境下搭建轻量级Web服务器，属于网络编程的简单实现，实现了以下功能：</p>
+<ul>
+<li>结合线程池、socket套接字、epoll函数实现多线程的并发模型，通过标志位切换LT&#x2F;ET模式、Reactor&#x2F;模拟Proactor模式</li>
+<li>结合主状态机、从状态机解析HTTP请求报文，可以处理GET和POST请求，返回服务器图片、视频资源</li>
+<li>使用服务器内部数据库保存用户名、登录密码，实现用户通过浏览器进行注册、登录功能</li>
+<li>基于有序链表实现定时器，关闭超时的非活跃连接</li>
+<li>结合单例模式和阻塞队列实现异步写日志模式，记录服务器的运行状态</li>
+</ul>
+<p><a href="https://imgtu.com/i/O1CC7V"><img src="https://s1.ax1x.com/2022/05/08/O1CC7V.png" alt="WebServer"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="Web服务器"><a href="#Web服务器" class="headerlink" title="Web服务器"></a>Web服务器</h3><p>Web服务器是指驻留于因特网上某种类型计算机的程序。当Web浏览器（客户端）连到服务器上并请求文件时，服务器将处理该请求并将文件反馈到该浏览器上，附带的信息会告诉浏览器如何查看该文件（即文件类型）。服务器使用HTTP（超文本传输协议）与客户机浏览器进行信息交流，因此也常被称为HTTP服务器。</p>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="新建WebServer类对象"><a href="#新建WebServer类对象" class="headerlink" title="新建WebServer类对象"></a>新建WebServer类对象</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">WebServer server;</span><br></pre></td></tr></table></figure>
+<p>新建WebServer类，通过构造函数初始化以下变量：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">m_log_write = <span class="number">0</span>;           <span class="comment">//写日志模式，默认为同步</span></span><br><span class="line">m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br></pre></td></tr></table></figure>
+<h3 id="开启日志"><a href="#开启日志" class="headerlink" title="开启日志"></a>开启日志</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">log_write</span>();</span><br></pre></td></tr></table></figure>
+<p>调用Log类的init初始化函数。</p>
+<h3 id="建立数据库连接池"><a href="#建立数据库连接池" class="headerlink" title="建立数据库连接池"></a>建立数据库连接池</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">sql_pool</span>();</span><br></pre></td></tr></table></figure>
+<p>调用conection_poll类的init初始化函数，并调用数据库的initmysql_result函数，取得用户名、密码。</p>
+<h3 id="建立线程池"><a href="#建立线程池" class="headerlink" title="建立线程池"></a>建立线程池</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">thread_pool</span>();</span><br></pre></td></tr></table></figure>
+<p>在线程池中新建指定数量的线程。</p>
+<h3 id="建立epoll监听套接字"><a href="#建立epoll监听套接字" class="headerlink" title="建立epoll监听套接字"></a>建立epoll监听套接字</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">eventListen</span>();</span><br></pre></td></tr></table></figure>
+<p>建立socket套接字，调用epoll函数监听。</p>
+<h3 id="处理epoll响应事件"><a href="#处理epoll响应事件" class="headerlink" title="处理epoll响应事件"></a>处理epoll响应事件</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">eventLoop</span>();</span><br></pre></td></tr></table></figure>
+<p>处理epoll函数返回的响应事件集合。</p>
+]]></content>
+      <categories>
+        <category>webserver</category>
+      </categories>
+      <tags>
+        <tag>学习日志</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>http处理类</title>
     <url>/2022/03/20/http%E5%A4%84%E7%90%86%E7%B1%BB/</url>
     <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>浏览器端发出http连接请求，主线程创建http对象接收请求并将所有数据读入对应buffer，将该对象插入任务队列，工作线程从任务队列中取出一个任务进行处理。工作线程取出任务后，调用process_read函数，通过主、从状态机对请求报文进行解析。解析完之后，跳转do_request函数生成响应报文，通过process_write写入buffer，返回给浏览器端。<br><a href="https://imgtu.com/i/OQV1rd"><img src="https://s1.ax1x.com/2022/05/07/OQV1rd.png" alt="http类"></a></p>
@@ -163,6 +204,7 @@
 <li>空行：请求头部后面的空行是必须的即使第四部分的请求数据为空，也必须有空行。</li>
 <li>主体：请求数据，可以添加任意的其他数据。</li>
 </ul>
+<p><a href="https://imgtu.com/i/O1CK76"><img src="https://s1.ax1x.com/2022/05/08/O1CK76.png" alt="HTTP请求"></a></p>
 <h3 id="http响应报文"><a href="#http响应报文" class="headerlink" title="http响应报文"></a>http响应报文</h3><p>HTTP响应也由四个部分组成，分别是：状态行、消息报头、空行和响应正文。</p>
 <ul>
 <li>状态行：由HTTP协议版本号，状态码，状态消息三部分组成。</li>
@@ -170,7 +212,8 @@
 <li>空行：消息报头后面的空行是必须的。</li>
 <li>响应正文：服务器返回给客户端的文本信息。空行后面的html部分为响应正文。</li>
 </ul>
-<h3 id="有限状态机"><a href="#有限状态机" class="headerlink" title="有限状态机"></a>有限状态机</h3><p>有限状态机,也称为FSM(Finite State Machine)，其在任意时刻都处于有限状态集合中的某一状态。当其获得一个输入字符时，将从当前状态转换到另一个状态，或者仍然保持在当前状态。任何一个FSM都可以用状态转换图来描述，图中的节点表示FSM中的一个状态，有向（方向表示从一个初态转换到次态）加权（权表示事件）边表示输入字符时状态的变化。如果图中不存在与当前状态与输入字符对应的有向边，则FSM将进入“消亡状态(Doom State)”，此后FSM将一直保持“消亡状态”。</p>
+<p><a href="https://imgtu.com/i/O1CbuR"><img src="https://s1.ax1x.com/2022/05/08/O1CbuR.png" alt="HTTP响应"></a></p>
+<h3 id="有限状态机"><a href="#有限状态机" class="headerlink" title="有限状态机"></a>有限状态机</h3><p>有限状态机,也称为FSM(Finite State Machine)，其在任意时刻都处于有限状态集合中的某一状态。当其获得一个输入字符时，将从当前状态转换到另一个状态，或者仍然保持在当前状态。任何一个FSM都可以用状态转换图来描述，图中的节点表示FSM中的一个状态，有向（方向表示从一个初态转换到次态）加权（权表示事件）边表示输入字符时状态的变化。如果图中不存在与当前状态与输入字符对应的有向边，则FSM将进入“消亡状态(Doom State)”，此后FSM将一直保持“消亡状态”。<br><a href="https://imgtu.com/i/O1unu8"><img src="https://s1.ax1x.com/2022/05/08/O1unu8.png" alt="主从状态机"></a></p>
 <h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="epoll创建"><a href="#epoll创建" class="headerlink" title="epoll创建"></a>epoll创建</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_create</span><span class="params">(<span class="type">int</span> size)</span></span></span><br></pre></td></tr></table></figure>
 <ul>
 <li>作用：创建epoll文件描述符；</li>
@@ -418,118 +461,6 @@
       </tags>
   </entry>
   <entry>
-    <title>main主函数</title>
-    <url>/2022/03/01/main%E4%B8%BB%E5%87%BD%E6%95%B0/</url>
-    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><span id="more"></span>
-<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="新建WebServer类对象"><a href="#新建WebServer类对象" class="headerlink" title="新建WebServer类对象"></a>新建WebServer类对象</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">WebServer server;</span><br></pre></td></tr></table></figure>
-<p>新建WebServer类，通过构造函数初始化以下变量：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">m_port = <span class="number">9006</span>;             <span class="comment">//端口号，默认9006</span></span><br><span class="line">m_sql_num = <span class="number">8</span>;             <span class="comment">//数据库连接池数量，默认8</span></span><br><span class="line">m_thread_num = <span class="number">8</span>;          <span class="comment">//线程池内的线程数量，默认8</span></span><br><span class="line">m_log_write = <span class="number">0</span>;           <span class="comment">//写日志模式，默认为同步</span></span><br><span class="line">m_OPT_LINGER = <span class="number">0</span>;          <span class="comment">//优雅关闭连接，默认不使用</span></span><br><span class="line">m_LISTENTrigmode=<span class="number">0</span>;        <span class="comment">//listenfd触发模式，默认LT</span></span><br><span class="line">m_CONNTrigmode=<span class="number">0</span>;          <span class="comment">//connfd触发模式，默认LT</span></span><br><span class="line">m_close_log = <span class="number">0</span>;           <span class="comment">//关闭日志，默认不关闭</span></span><br><span class="line">m_actormodel = <span class="number">0</span>;          <span class="comment">//并发模型，默认是proactor</span></span><br><span class="line">m_user = <span class="string">&quot;root&quot;</span>;           <span class="comment">//数据库信息:登录名</span></span><br><span class="line">m_passWord = <span class="string">&quot;1&quot;</span>;          <span class="comment">//数据库信息:密码</span></span><br><span class="line">m_databaseName = <span class="string">&quot;yourdb&quot;</span>; <span class="comment">//数据库信息:库名</span></span><br></pre></td></tr></table></figure>
-<h3 id="开启日志"><a href="#开启日志" class="headerlink" title="开启日志"></a>开启日志</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">log_write</span>();</span><br></pre></td></tr></table></figure>
-<p>调用Log类的init初始化函数。</p>
-<h3 id="建立数据库连接池"><a href="#建立数据库连接池" class="headerlink" title="建立数据库连接池"></a>建立数据库连接池</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">sql_pool</span>();</span><br></pre></td></tr></table></figure>
-<p>调用conection_poll类的init初始化函数，并调用数据库的initmysql_result函数，取得用户名、密码。</p>
-<h3 id="建立线程池"><a href="#建立线程池" class="headerlink" title="建立线程池"></a>建立线程池</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">thread_pool</span>();</span><br></pre></td></tr></table></figure>
-<p>在线程池中新建指定数量的线程。</p>
-<h3 id="建立epoll监听套接字"><a href="#建立epoll监听套接字" class="headerlink" title="建立epoll监听套接字"></a>建立epoll监听套接字</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">eventListen</span>();</span><br></pre></td></tr></table></figure>
-<p>建立socket套接字，调用epoll函数监听。</p>
-<h3 id="处理epoll响应事件"><a href="#处理epoll响应事件" class="headerlink" title="处理epoll响应事件"></a>处理epoll响应事件</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">server.<span class="built_in">eventLoop</span>();</span><br></pre></td></tr></table></figure>
-<p>处理epoll函数返回的响应事件集合。</p>
-]]></content>
-      <categories>
-        <category>webserver</category>
-      </categories>
-      <tags>
-        <tag>学习日志</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>定时器</title>
-    <url>/2022/03/15/%E5%AE%9A%E6%97%B6%E5%99%A8/</url>
-    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>服务器主循环为每一个连接创建一个定时器，并对每个连接进行定时，利用升序时间链表容器将所有定时器串联起来，若主循环接收到定时通知，则在链表中依次执行定时任务。本项目利用alarm函数周期性触发SIGALRM信号，信号处理函数利用管道通知主循环，主循环接受到该信号后对升序链表上所有定时器进行处理。若该段时间内没有交换出具，则将该连接关闭，释放所占用的资源。<br><a href="https://imgtu.com/i/OMytEj"><img src="https://s1.ax1x.com/2022/05/07/OMytEj.png" alt="定时器"></a></p>
-<span id="more"></span>
-<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p><strong>定时事件</strong>：固定一段时间之后触发某段代码，由该段代码处理一个事件。<br><strong>非活跃事件</strong>：客户端与服务器端建立连接后，长时间不交换数据，一直占用服务端的文件描述符，导致连接资源的浪费。<br><strong>定时器</strong>：将定时事件与连接资源封装为一个结构体定时器。</p>
-<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="epoll-event结构体"><a href="#epoll-event结构体" class="headerlink" title="epoll_event结构体"></a>epoll_event结构体</h3><p>用于注册所感兴趣的事件和回传所发送待处理的事件，定义如下</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">union</span> <span class="title class_">epoll_data</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> *ptr;</span><br><span class="line">    <span class="type">int</span> fd;</span><br><span class="line">    <span class="type">__uint32_t</span> u32;</span><br><span class="line">    <span class="type">__uint64_t</span> u64;</span><br><span class="line">&#125; <span class="type">epoll_data_t</span>;<span class="comment">//保存触发事件的某个文件描述符相关的数据</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">epoll_event</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">__uint32_t</span> events;      <span class="comment">/* epoll event */</span></span><br><span class="line">    <span class="type">epoll_data_t</span> data;      <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>其中events表示感兴趣的事件和被触发的事件，可能的取值有：</p>
-<ul>
-<li>EPOLLIN：文件描述符可以读；</li>
-<li>EPOLLOUT：文件描述符可以写；</li>
-<li>EPOLLPRI：文件描述符有紧急的数可读；</li>
-<li>EPOLLERR：文件描述符发生错误；</li>
-<li>EPOLLHUP：文件描述符被挂断；</li>
-<li>EPOLLET：ET的epoll工作模式；</li>
-</ul>
-<h3 id="LT-x2F-ET工作模式"><a href="#LT-x2F-ET工作模式" class="headerlink" title="LT&#x2F;ET工作模式"></a>LT&#x2F;ET工作模式</h3><p>与poll的事件宏相比，epoll新增了一个事件宏EPOLLET，这就是所谓的边缘触发模式（Edge Trigger，ET），而默认的模式我们称为水平触发模式（Level Trigger，LT）。这两种模式的区别在于：对于水平触发模式，一个事件只要有，就会一直触发；对于边缘触发模式，只有一个事件从无到有才会触发。这两个词汇来自电学术语，你可以将fd上有数据认为是高电平，没有数据认为是低电平，将fd可写认为是高电平，fd不可写认为是低电平。那么水平模式的触发条件是状态处于高电平，而边缘模式的触发条件是新来一次电信号将当前状态变为高电平。<br>以socket的读事件为例，对于水平模式，只要socket上有未读完的数据，就会一直产生EPOLLIN 事件；而对于边缘模式，socket上每新来一次数据就会触发一次，如果上一次触发后，未将socket上的数据读完，也不会再触发，除非再新来一次数据。也就是说，如果对于一个非阻塞socket，如果使用epoll边缘模式去检测数据是否可读，触发可读事件以后，一定要一次性把socket上的数据收取干净才行，也就是说一定要循环调用recv函数直到recv出错，错误码是EWOULDBLOCK（EAGAIN 一样）（此时表示socket上本次数据已经读完）；如果使用水平模式，则不用，你可以根据业务一次性收取固定的字节数，或者收完为止。</p>
-<h3 id="EPOLLONESHOT事件"><a href="#EPOLLONESHOT事件" class="headerlink" title="EPOLLONESHOT事件"></a>EPOLLONESHOT事件</h3><p>epoll模型的ET模式一般来说只触发一次，然而在并发程序中有特殊情况的存在，譬如当epoll_wait已经检测到socket描述符fd1，并通知应用程序处理fd1的数据，那么处理过程中该fd1又有新的数据可读，会唤醒其他线程对fd1进行操作，那么就出现了两个工作线程同时处理fd1的情况，这当然不是我们期望看到的。而epolloneshot事件规定操作系统最多触发其上注册的一个可读或者可写或者异常事件，且只触发一次，如此无论线程再多，只能有一个线程或进程处理同一个描述符。当然处理完之后线程要重置这个epolloneshot事件，进而当此描述符有事件可读时让其他进程可以处理此描述符。</p>
-<h3 id="fcntl函数"><a href="#fcntl函数" class="headerlink" title="fcntl函数"></a>fcntl函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, <span class="type">long</span> arg)</span></span>;         </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, <span class="keyword">struct</span> flock *lock)</span></span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>作用：操作文件描述符的一些特性</li>
-<li>参数：<ul>
-<li>fd：欲设置的文件描述符</li>
-<li>cmd：欲操作的指令<ul>
-<li>F_DUPFD：用来查找大于或等于参数arg的最小且仍未使用的文件描述词，并且复制参数fd的文件描述词，执行成功则返回新复制的文件描述词；</li>
-<li>F_GETFD：取得close-on-exec 旗标，若此旗标的FD_CLOEXEC 位为0, 代表在调用exec()相关函数时文件将不会关闭；</li>
-<li>F_SETFD：设置close-on-exec 旗标，该旗标以参数arg 的FD_CLOEXEC位决定；</li>
-<li>F_GETFL：取得文件描述词状态旗标，此旗标为open()的参数flags；</li>
-<li>F_SETFL：设置文件描述词状态旗标，参数arg为新旗标，但只允许O_APPEND、O_NONBLOCK（非阻塞IO）和O_ASYNC位的改变，其他位的改变将不受影响；</li>
-<li>F_GETLK：取得文件锁定的状态；</li>
-<li>F_SETLK：设置文件锁定的状态，此时flcok结构的l_type值必须是F_RDLCK、F_WRLCK 或F_UNLCK，如果无法建立锁定，则返回-1，错误代码为EACCES或EAGAIN；</li>
-<li>F_SETLKW：同F_SETLK作用相同，但是无法建立锁定时，此调用会一直等到锁定动作成功为止，若在等待锁定的过程中被信号中断时，会立即返回-1，错误代码为EINTR，参数lock指针为flock 结构指针；</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>返回值：成功则返回0，若有错误则返回-1，错误原因存于errno；</li>
-</ul>
-<h3 id="sigaction函数与结构体"><a href="#sigaction函数与结构体" class="headerlink" title="sigaction函数与结构体"></a>sigaction函数与结构体</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sigaction</span><span class="params">(<span class="type">int</span> signum,<span class="type">const</span> <span class="keyword">struct</span> sigaction *act,<span class="type">const</span> <span class="keyword">struct</span> sigaction *old)</span></span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>作用：改变进程接收到特定信号后的行为；</li>
-<li>参数：<ul>
-<li>signum：信号的值，可以为除sigkill及sigstop外的任何一个特定有效的信号；</li>
-<li>act：指向结构sigaction的一个实例的指针，在结构sigaction的实例中，指定了对特定信号的处理，可以为空，进程会以缺省方式对信号处理；</li>
-<li>old：指向的对象用来保存原来对相应信号的处理，可以传入结构sigaction的指针来获取之前对信号处理情况，如果不需要保存可指定oldact为null。</li>
-</ul>
-</li>
-<li>返回值：函数成功返回0，失败返回-1；</li>
-</ul>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">sigaction</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">void</span> (*sa_handler)(<span class="type">int</span>);</span><br><span class="line">    <span class="built_in">void</span> (*sa_sigaction)(<span class="type">int</span>, <span class="type">siginfo_t</span> *, <span class="type">void</span> *);</span><br><span class="line">    <span class="type">sigset_t</span> sa_mask;</span><br><span class="line">    <span class="type">int</span> sa_flags;</span><br><span class="line">    <span class="built_in">void</span> (*sa_restorer)(<span class="type">void</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>sa_handler：一个函数指针，指向信号处理函数；</li>
-<li>sa_sigaction：同样是信号处理函数，有三个参数，可以获得关于信号更详细的信息；</li>
-<li>sa_mask：用来指定在信号处理函数执行期间需要被屏蔽的信号；</li>
-<li>sa_flags：用于指定信号处理的行为；<ul>
-<li>SA_RESTART：使被信号打断的系统调用自动重新发起；</li>
-<li>SA_NOCLDSTOP：使父进程在它的子进程暂停或继续运行时不会收到SIGCHLD信号；</li>
-<li>SA_NOCLDWAIT：使父进程在它的子进程退出时不会收到SIGCHLD信号，这时子进程如果退出也不会成为僵尸进程；</li>
-<li>SA_NODEFER：使对信号的屏蔽无效，即在信号处理函数执行期间仍能发出这个信号；</li>
-<li>SA_RESETHAND：信号处理之后重新设置为默认的处理方式；</li>
-<li>SA_SIGINFO：使用sa_sigaction成员而不是sa_handler作为信号处理函数；</li>
-</ul>
-</li>
-<li>sa_restorer：一般不使用；</li>
-</ul>
-<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="定时器类"><a href="#定时器类" class="headerlink" title="定时器类"></a>定时器类</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">util_timer</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">time_t</span> expire;                 <span class="comment">//超时时间</span></span><br><span class="line">    <span class="built_in">void</span> (*cb_func)(client_data*); <span class="comment">//回调函数</span></span><br><span class="line">    client_data* user_data;        <span class="comment">//连接资源</span></span><br><span class="line">    util_timer* prev;              <span class="comment">//前向定时器</span></span><br><span class="line">    util_timer* next;              <span class="comment">//后继定时器</span></span><br><span class="line">    <span class="built_in">util_timer</span>():<span class="built_in">prev</span>(<span class="literal">NULL</span>),<span class="built_in">next</span>(<span class="literal">NULL</span>)&#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h3 id="连接资源结构体"><a href="#连接资源结构体" class="headerlink" title="连接资源结构体"></a>连接资源结构体</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">client_data</span></span><br><span class="line">&#123;</span><br><span class="line">    sockaddr_in address; <span class="comment">//客户端socket地址</span></span><br><span class="line">    <span class="type">int</span> sockfd;          <span class="comment">//socket文件描述符</span></span><br><span class="line">    util_timer* timer;   <span class="comment">//定时器类</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h3 id="向定时器链表中添加定时器"><a href="#向定时器链表中添加定时器" class="headerlink" title="向定时器链表中添加定时器"></a>向定时器链表中添加定时器</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">sort_timer_lst::add_timer</span><span class="params">(util_timer* timer)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!timer)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span>(!head)</span><br><span class="line">    &#123;</span><br><span class="line">        head=tail=timer;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(timer-&gt;expire&lt;head-&gt;expire)</span><br><span class="line">    &#123;</span><br><span class="line">        timer-&gt;next=head;</span><br><span class="line">        head-&gt;prev=timer;</span><br><span class="line">        head=timer;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">add_timer</span>(timer,head);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果新的定时器超时时间timer-&gt;expire小于当前头部结点超时时间head-&gt;expire，则直接将当前定时器结点作为头部结点。否则就调用私有成员函数add_timer，找出定时器链表中大于新的定时器超时时间的结点，再进行插入操作。</p>
-<h3 id="定时任务处理函数"><a href="#定时任务处理函数" class="headerlink" title="定时任务处理函数"></a>定时任务处理函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">sort_timer_lst::tick</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!head)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="type">time_t</span> cur=<span class="built_in">time</span>(<span class="literal">NULL</span>);</span><br><span class="line">    util_timer* temp=head;</span><br><span class="line">    <span class="keyword">while</span>(temp)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(cur&lt;temp-&gt;expire)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        temp-&gt;<span class="built_in">cb_func</span>(temp-&gt;user_data);</span><br><span class="line">        head=temp-&gt;next;</span><br><span class="line">        <span class="keyword">if</span>(head)</span><br><span class="line">            head-&gt;prev=<span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">delete</span> temp;</span><br><span class="line">        temp=head;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>首先获取当前时间，之后通过while循环遍历定时器链表。因为链表为升序排列，所以如果当前时间小于定时器的超时时间，则后面的定时器也没有到期。如果当前定时器到期，则调用回调函数，执行定时事件，并将处理后的定时器从链表容器中删除，重置头结点。</p>
-<h3 id="定时器回调函数"><a href="#定时器回调函数" class="headerlink" title="定时器回调函数"></a>定时器回调函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">cb_func</span><span class="params">(client_data* user_data)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">epoll_ctl</span>(Utils::u_epollfd,EPOLL_CTL_DEL,user_data-&gt;sockfd,<span class="number">0</span>);</span><br><span class="line">    <span class="built_in">assert</span>(user_data);</span><br><span class="line">    <span class="built_in">close</span>(user_data-&gt;sockfd);</span><br><span class="line">    http_conn::m_user_count--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>删除非活动连接在socket上的注册事件，关闭文件描述符，减少连接数。</p>
-<h3 id="注册读事件"><a href="#注册读事件" class="headerlink" title="注册读事件"></a>注册读事件</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Utils::addfd</span><span class="params">(<span class="type">int</span> epollfd, <span class="type">int</span> fd, <span class="type">bool</span> one_shot, <span class="type">int</span> TRIGMode)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    epoll_event event;</span><br><span class="line">    event.data.fd = fd;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">1</span> == TRIGMode)</span><br><span class="line">        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        event.events = EPOLLIN | EPOLLRDHUP;</span><br><span class="line">    <span class="keyword">if</span> (one_shot)</span><br><span class="line">        event.events |= EPOLLONESHOT;</span><br><span class="line">    <span class="built_in">epoll_ctl</span>(epollfd, EPOLL_CTL_ADD, fd, &amp;event);</span><br><span class="line">    <span class="built_in">setnonblocking</span>(fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>one_shot为是否开始EPOLLONESHOT标志，TRIGMode为ET&#x2F;LT模式切换标志，为1表示ET模式，为0表示LT模式，通过events的异或操作添加相关状态。setnonblocking函数将fd设置为非阻塞状态。</p>
-<h3 id="设置信号函数"><a href="#设置信号函数" class="headerlink" title="设置信号函数"></a>设置信号函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Utils::addsig</span><span class="params">(<span class="type">int</span> sig,<span class="type">void</span>(handler)(<span class="type">int</span>),<span class="type">bool</span> restart)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sigaction</span> sa;</span><br><span class="line">    <span class="built_in">memset</span>(&amp;sa,<span class="string">&#x27;\0&#x27;</span>,<span class="built_in">sizeof</span>(sa));</span><br><span class="line">    sa.sa_handler=handler;</span><br><span class="line">    <span class="keyword">if</span>(restart)</span><br><span class="line">        sa.sa_flags|=SA_RESTART;</span><br><span class="line">    <span class="built_in">sigfillset</span>(&amp;sa.sa_mask);  </span><br><span class="line">    <span class="built_in">assert</span>(<span class="built_in">sigaction</span>(sig,&amp;sa,<span class="literal">NULL</span>)!=<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>addsig函数对sig信号的处理函数设置为handler，当restart标志为真时，添加SA_RESTART信号，表示使被信号打断的系统调用自动重新发起。</p>
-]]></content>
-      <categories>
-        <category>webserver</category>
-      </categories>
-      <tags>
-        <tag>学习日志</tag>
-        <tag>定时器</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>数据库连接池</title>
     <url>/2022/03/10/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/</url>
     <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>池是一种资源的容器，有多种实现方法，如数组、链表、队列等，本项目使用单例模式和链表创建数据库连接池，实现对数据库连接资源的复用。数据库模块可以分为两部分，其一是数据库连接池的定义和初始化，其二是利用连接池完成登录和注册的校验功能。具体而言，工作线程从数据库连接池取得一个连接，访问数据库中的数据，访问完毕后将连接交还给连接池。<br><a href="https://imgtu.com/i/OKboPf"><img src="https://s1.ax1x.com/2022/05/06/OKboPf.png" alt="数据库连接池"></a></p>
@@ -638,6 +569,93 @@
       </tags>
   </entry>
   <entry>
+    <title>定时器</title>
+    <url>/2022/03/15/%E5%AE%9A%E6%97%B6%E5%99%A8/</url>
+    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>服务器主循环为每一个连接创建一个定时器，并对每个连接进行定时，利用升序时间链表容器将所有定时器串联起来，若主循环接收到定时通知，则在链表中依次执行定时任务。本项目利用alarm函数周期性触发SIGALRM信号，信号处理函数利用管道通知主循环，主循环接受到该信号后对升序链表上所有定时器进行处理。若该段时间内没有交换出具，则将该连接关闭，释放所占用的资源。<br><a href="https://imgtu.com/i/OMytEj"><img src="https://s1.ax1x.com/2022/05/07/OMytEj.png" alt="定时器"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p><strong>定时事件</strong>：固定一段时间之后触发某段代码，由该段代码处理一个事件。<br><strong>非活跃事件</strong>：客户端与服务器端建立连接后，长时间不交换数据，一直占用服务端的文件描述符，导致连接资源的浪费。<br><strong>定时器</strong>：将定时事件与连接资源封装为一个结构体定时器。</p>
+<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="epoll-event结构体"><a href="#epoll-event结构体" class="headerlink" title="epoll_event结构体"></a>epoll_event结构体</h3><p>用于注册所感兴趣的事件和回传所发送待处理的事件，定义如下</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">union</span> <span class="title class_">epoll_data</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span> *ptr;</span><br><span class="line">    <span class="type">int</span> fd;</span><br><span class="line">    <span class="type">__uint32_t</span> u32;</span><br><span class="line">    <span class="type">__uint64_t</span> u64;</span><br><span class="line">&#125; <span class="type">epoll_data_t</span>;<span class="comment">//保存触发事件的某个文件描述符相关的数据</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">epoll_event</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">__uint32_t</span> events;      <span class="comment">/* epoll event */</span></span><br><span class="line">    <span class="type">epoll_data_t</span> data;      <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>其中events表示感兴趣的事件和被触发的事件，可能的取值有：</p>
+<ul>
+<li>EPOLLIN：文件描述符可以读；</li>
+<li>EPOLLOUT：文件描述符可以写；</li>
+<li>EPOLLPRI：文件描述符有紧急的数可读；</li>
+<li>EPOLLERR：文件描述符发生错误；</li>
+<li>EPOLLHUP：文件描述符被挂断；</li>
+<li>EPOLLET：ET的epoll工作模式；</li>
+</ul>
+<h3 id="LT-x2F-ET工作模式"><a href="#LT-x2F-ET工作模式" class="headerlink" title="LT&#x2F;ET工作模式"></a>LT&#x2F;ET工作模式</h3><p>与poll的事件宏相比，epoll新增了一个事件宏EPOLLET，这就是所谓的边缘触发模式（Edge Trigger，ET），而默认的模式我们称为水平触发模式（Level Trigger，LT）。这两种模式的区别在于：对于水平触发模式，一个事件只要有，就会一直触发；对于边缘触发模式，只有一个事件从无到有才会触发。这两个词汇来自电学术语，你可以将fd上有数据认为是高电平，没有数据认为是低电平，将fd可写认为是高电平，fd不可写认为是低电平。那么水平模式的触发条件是状态处于高电平，而边缘模式的触发条件是新来一次电信号将当前状态变为高电平。<br>以socket的读事件为例，对于水平模式，只要socket上有未读完的数据，就会一直产生EPOLLIN 事件；而对于边缘模式，socket上每新来一次数据就会触发一次，如果上一次触发后，未将socket上的数据读完，也不会再触发，除非再新来一次数据。也就是说，如果对于一个非阻塞socket，如果使用epoll边缘模式去检测数据是否可读，触发可读事件以后，一定要一次性把socket上的数据收取干净才行，也就是说一定要循环调用recv函数直到recv出错，错误码是EWOULDBLOCK（EAGAIN 一样）（此时表示socket上本次数据已经读完）；如果使用水平模式，则不用，你可以根据业务一次性收取固定的字节数，或者收完为止。</p>
+<h3 id="EPOLLONESHOT事件"><a href="#EPOLLONESHOT事件" class="headerlink" title="EPOLLONESHOT事件"></a>EPOLLONESHOT事件</h3><p>epoll模型的ET模式一般来说只触发一次，然而在并发程序中有特殊情况的存在，譬如当epoll_wait已经检测到socket描述符fd1，并通知应用程序处理fd1的数据，那么处理过程中该fd1又有新的数据可读，会唤醒其他线程对fd1进行操作，那么就出现了两个工作线程同时处理fd1的情况，这当然不是我们期望看到的。而epolloneshot事件规定操作系统最多触发其上注册的一个可读或者可写或者异常事件，且只触发一次，如此无论线程再多，只能有一个线程或进程处理同一个描述符。当然处理完之后线程要重置这个epolloneshot事件，进而当此描述符有事件可读时让其他进程可以处理此描述符。</p>
+<h3 id="fcntl函数"><a href="#fcntl函数" class="headerlink" title="fcntl函数"></a>fcntl函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, <span class="type">long</span> arg)</span></span>;         </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">fcntl</span><span class="params">(<span class="type">int</span> fd, <span class="type">int</span> cmd, <span class="keyword">struct</span> flock *lock)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：操作文件描述符的一些特性</li>
+<li>参数：<ul>
+<li>fd：欲设置的文件描述符</li>
+<li>cmd：欲操作的指令<ul>
+<li>F_DUPFD：用来查找大于或等于参数arg的最小且仍未使用的文件描述词，并且复制参数fd的文件描述词，执行成功则返回新复制的文件描述词；</li>
+<li>F_GETFD：取得close-on-exec 旗标，若此旗标的FD_CLOEXEC 位为0, 代表在调用exec()相关函数时文件将不会关闭；</li>
+<li>F_SETFD：设置close-on-exec 旗标，该旗标以参数arg 的FD_CLOEXEC位决定；</li>
+<li>F_GETFL：取得文件描述词状态旗标，此旗标为open()的参数flags；</li>
+<li>F_SETFL：设置文件描述词状态旗标，参数arg为新旗标，但只允许O_APPEND、O_NONBLOCK（非阻塞IO）和O_ASYNC位的改变，其他位的改变将不受影响；</li>
+<li>F_GETLK：取得文件锁定的状态；</li>
+<li>F_SETLK：设置文件锁定的状态，此时flcok结构的l_type值必须是F_RDLCK、F_WRLCK 或F_UNLCK，如果无法建立锁定，则返回-1，错误代码为EACCES或EAGAIN；</li>
+<li>F_SETLKW：同F_SETLK作用相同，但是无法建立锁定时，此调用会一直等到锁定动作成功为止，若在等待锁定的过程中被信号中断时，会立即返回-1，错误代码为EINTR，参数lock指针为flock 结构指针；</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>返回值：成功则返回0，若有错误则返回-1，错误原因存于errno；</li>
+</ul>
+<h3 id="sigaction函数与结构体"><a href="#sigaction函数与结构体" class="headerlink" title="sigaction函数与结构体"></a>sigaction函数与结构体</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sigaction</span><span class="params">(<span class="type">int</span> signum,<span class="type">const</span> <span class="keyword">struct</span> sigaction *act,<span class="type">const</span> <span class="keyword">struct</span> sigaction *old)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：改变进程接收到特定信号后的行为；</li>
+<li>参数：<ul>
+<li>signum：信号的值，可以为除sigkill及sigstop外的任何一个特定有效的信号；</li>
+<li>act：指向结构sigaction的一个实例的指针，在结构sigaction的实例中，指定了对特定信号的处理，可以为空，进程会以缺省方式对信号处理；</li>
+<li>old：指向的对象用来保存原来对相应信号的处理，可以传入结构sigaction的指针来获取之前对信号处理情况，如果不需要保存可指定oldact为null。</li>
+</ul>
+</li>
+<li>返回值：函数成功返回0，失败返回-1；</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">sigaction</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">void</span> (*sa_handler)(<span class="type">int</span>);</span><br><span class="line">    <span class="built_in">void</span> (*sa_sigaction)(<span class="type">int</span>, <span class="type">siginfo_t</span> *, <span class="type">void</span> *);</span><br><span class="line">    <span class="type">sigset_t</span> sa_mask;</span><br><span class="line">    <span class="type">int</span> sa_flags;</span><br><span class="line">    <span class="built_in">void</span> (*sa_restorer)(<span class="type">void</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>sa_handler：一个函数指针，指向信号处理函数；</li>
+<li>sa_sigaction：同样是信号处理函数，有三个参数，可以获得关于信号更详细的信息；</li>
+<li>sa_mask：用来指定在信号处理函数执行期间需要被屏蔽的信号；</li>
+<li>sa_flags：用于指定信号处理的行为；<ul>
+<li>SA_RESTART：使被信号打断的系统调用自动重新发起；</li>
+<li>SA_NOCLDSTOP：使父进程在它的子进程暂停或继续运行时不会收到SIGCHLD信号；</li>
+<li>SA_NOCLDWAIT：使父进程在它的子进程退出时不会收到SIGCHLD信号，这时子进程如果退出也不会成为僵尸进程；</li>
+<li>SA_NODEFER：使对信号的屏蔽无效，即在信号处理函数执行期间仍能发出这个信号；</li>
+<li>SA_RESETHAND：信号处理之后重新设置为默认的处理方式；</li>
+<li>SA_SIGINFO：使用sa_sigaction成员而不是sa_handler作为信号处理函数；</li>
+</ul>
+</li>
+<li>sa_restorer：一般不使用；</li>
+</ul>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="定时器类"><a href="#定时器类" class="headerlink" title="定时器类"></a>定时器类</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">util_timer</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">time_t</span> expire;                 <span class="comment">//超时时间</span></span><br><span class="line">    <span class="built_in">void</span> (*cb_func)(client_data*); <span class="comment">//回调函数</span></span><br><span class="line">    client_data* user_data;        <span class="comment">//连接资源</span></span><br><span class="line">    util_timer* prev;              <span class="comment">//前向定时器</span></span><br><span class="line">    util_timer* next;              <span class="comment">//后继定时器</span></span><br><span class="line">    <span class="built_in">util_timer</span>():<span class="built_in">prev</span>(<span class="literal">NULL</span>),<span class="built_in">next</span>(<span class="literal">NULL</span>)&#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="连接资源结构体"><a href="#连接资源结构体" class="headerlink" title="连接资源结构体"></a>连接资源结构体</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">client_data</span></span><br><span class="line">&#123;</span><br><span class="line">    sockaddr_in address; <span class="comment">//客户端socket地址</span></span><br><span class="line">    <span class="type">int</span> sockfd;          <span class="comment">//socket文件描述符</span></span><br><span class="line">    util_timer* timer;   <span class="comment">//定时器类</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="向定时器链表中添加定时器"><a href="#向定时器链表中添加定时器" class="headerlink" title="向定时器链表中添加定时器"></a>向定时器链表中添加定时器</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">sort_timer_lst::add_timer</span><span class="params">(util_timer* timer)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!timer)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span>(!head)</span><br><span class="line">    &#123;</span><br><span class="line">        head=tail=timer;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(timer-&gt;expire&lt;head-&gt;expire)</span><br><span class="line">    &#123;</span><br><span class="line">        timer-&gt;next=head;</span><br><span class="line">        head-&gt;prev=timer;</span><br><span class="line">        head=timer;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">add_timer</span>(timer,head);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果新的定时器超时时间timer-&gt;expire小于当前头部结点超时时间head-&gt;expire，则直接将当前定时器结点作为头部结点。否则就调用私有成员函数add_timer，找出定时器链表中大于新的定时器超时时间的结点，再进行插入操作。</p>
+<h3 id="定时任务处理函数"><a href="#定时任务处理函数" class="headerlink" title="定时任务处理函数"></a>定时任务处理函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">sort_timer_lst::tick</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!head)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="type">time_t</span> cur=<span class="built_in">time</span>(<span class="literal">NULL</span>);</span><br><span class="line">    util_timer* temp=head;</span><br><span class="line">    <span class="keyword">while</span>(temp)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(cur&lt;temp-&gt;expire)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        temp-&gt;<span class="built_in">cb_func</span>(temp-&gt;user_data);</span><br><span class="line">        head=temp-&gt;next;</span><br><span class="line">        <span class="keyword">if</span>(head)</span><br><span class="line">            head-&gt;prev=<span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">delete</span> temp;</span><br><span class="line">        temp=head;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先获取当前时间，之后通过while循环遍历定时器链表。因为链表为升序排列，所以如果当前时间小于定时器的超时时间，则后面的定时器也没有到期。如果当前定时器到期，则调用回调函数，执行定时事件，并将处理后的定时器从链表容器中删除，重置头结点。</p>
+<h3 id="定时器回调函数"><a href="#定时器回调函数" class="headerlink" title="定时器回调函数"></a>定时器回调函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">cb_func</span><span class="params">(client_data* user_data)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">epoll_ctl</span>(Utils::u_epollfd,EPOLL_CTL_DEL,user_data-&gt;sockfd,<span class="number">0</span>);</span><br><span class="line">    <span class="built_in">assert</span>(user_data);</span><br><span class="line">    <span class="built_in">close</span>(user_data-&gt;sockfd);</span><br><span class="line">    http_conn::m_user_count--;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>删除非活动连接在socket上的注册事件，关闭文件描述符，减少连接数。</p>
+<h3 id="注册读事件"><a href="#注册读事件" class="headerlink" title="注册读事件"></a>注册读事件</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Utils::addfd</span><span class="params">(<span class="type">int</span> epollfd, <span class="type">int</span> fd, <span class="type">bool</span> one_shot, <span class="type">int</span> TRIGMode)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    epoll_event event;</span><br><span class="line">    event.data.fd = fd;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">1</span> == TRIGMode)</span><br><span class="line">        event.events = EPOLLIN | EPOLLET | EPOLLRDHUP;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        event.events = EPOLLIN | EPOLLRDHUP;</span><br><span class="line">    <span class="keyword">if</span> (one_shot)</span><br><span class="line">        event.events |= EPOLLONESHOT;</span><br><span class="line">    <span class="built_in">epoll_ctl</span>(epollfd, EPOLL_CTL_ADD, fd, &amp;event);</span><br><span class="line">    <span class="built_in">setnonblocking</span>(fd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>one_shot为是否开始EPOLLONESHOT标志，TRIGMode为ET&#x2F;LT模式切换标志，为1表示ET模式，为0表示LT模式，通过events的异或操作添加相关状态。setnonblocking函数将fd设置为非阻塞状态。</p>
+<h3 id="设置信号函数"><a href="#设置信号函数" class="headerlink" title="设置信号函数"></a>设置信号函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Utils::addsig</span><span class="params">(<span class="type">int</span> sig,<span class="type">void</span>(handler)(<span class="type">int</span>),<span class="type">bool</span> restart)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sigaction</span> sa;</span><br><span class="line">    <span class="built_in">memset</span>(&amp;sa,<span class="string">&#x27;\0&#x27;</span>,<span class="built_in">sizeof</span>(sa));</span><br><span class="line">    sa.sa_handler=handler;</span><br><span class="line">    <span class="keyword">if</span>(restart)</span><br><span class="line">        sa.sa_flags|=SA_RESTART;</span><br><span class="line">    <span class="built_in">sigfillset</span>(&amp;sa.sa_mask);  </span><br><span class="line">    <span class="built_in">assert</span>(<span class="built_in">sigaction</span>(sig,&amp;sa,<span class="literal">NULL</span>)!=<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>addsig函数对sig信号的处理函数设置为handler，当restart标志为真时，添加SA_RESTART信号，表示使被信号打断的系统调用自动重新发起。</p>
+]]></content>
+      <categories>
+        <category>webserver</category>
+      </categories>
+      <tags>
+        <tag>学习日志</tag>
+        <tag>定时器</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>日志系统</title>
     <url>/2022/03/11/%E6%97%A5%E5%BF%97/</url>
     <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>项目中使用单例模式创建日志类对象，对webserver运行状态、错误信息和访问数据进行记录，可以实现按天分类、超行分类功能，并且同时提供同步和异步两种写入方式。异步日志模式中，将生产者-消费者模型封装成阻塞队列，创建一个日志写线程，工作线程把要写入的内容push进队列，写线程从队列中取出内容，写入日志文件。<br><a href="https://imgtu.com/i/OMJR61"><img src="https://s1.ax1x.com/2022/05/07/OMJR61.png" alt="日志类"></a></p>
@@ -727,133 +745,6 @@
       <tags>
         <tag>学习日志</tag>
         <tag>日志系统</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>线程池</title>
-    <url>/2022/03/05/%E7%BA%BF%E7%A8%8B%E6%B1%A0/</url>
-    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>线程池是一种基于池化思想管理和使用线程的机制。它是将多个线程预先存储在一个“池子”内，当有任务出现时可以避免重新创建和销毁线程所带来性能开销，只需要从“池子”内取出相应的线程执行对应的任务即可。当服务器进入正式运行阶段，开始处理客户请求的时候，如果它需要相关的资源，可以直接从池中获取，无需动态分配。当服务器处理完一个客户连接后，可以把相关的资源放回池中，无需执行系统调用释放资源。<br><a href="https://imgtu.com/i/OKcodJ"><img src="https://s1.ax1x.com/2022/05/06/OKcodJ.png" alt="线程池类"></a></p>
-<span id="more"></span>
-<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="IO"><a href="#IO" class="headerlink" title="IO"></a>IO</h3><p>IO的英文全称是Input&#x2F;Output，就是输入&#x2F;输出。应用程序发起的一次IO操作包含两个阶段：IO调用——应用程序进程向操作系统内核发起调用，IO执行——操作系统内核完成IO操作。操作系统内核完成IO操作还包括两个阶段：准备数据——内核等待I&#x2F;O设备准备好数据，拷贝数据——将数据从内核缓冲区拷贝到用户进程缓冲区。其实IO就是把进程的内部数据转移到外部设备，或者把外部设备的数据迁移到进程内部。外部设备一般指硬盘、Socket通讯的网卡。一个完整的IO过程包括以下几个步骤：</p>
-<ul>
-<li>应用程序进程向操作系统发起IO调用请求</li>
-<li>操作系统准备数据，把IO外部设备的数据，加载到内核区</li>
-<li>操作系统拷贝数据，即将内核缓冲区的数据，拷贝到用户进程缓冲区</li>
-</ul>
-<h3 id="IO模型"><a href="#IO模型" class="headerlink" title="IO模型"></a>IO模型</h3><p><strong>阻塞IO模型</strong>：应用程序的进程发起IO调用，如果内核的数据还没准备好的话，那应用程序就一直在阻塞等待，一直等到内核数据准备好了，从内核拷贝到用户空间，才返回成功提示。<br><strong>非阻塞IO模型</strong>：应用程序的进程发起IO调用，如果内核的数据还没准备好的话，就返回错误信息给用户进程，让其不需要等待，而是通过轮询的方式再来请求，其基本流程如下：</p>
-<ul>
-<li>应用进程向操作系统内核发起读数据请求</li>
-<li>操作系统内核数据未准备好，立刻返回错误码</li>
-<li>应用程序进程轮询调用，继续向操作系统内核发起读数据请求</li>
-<li>操作系统内核数据准备好了，从内核缓冲区拷贝到用户空间</li>
-<li>完成调用，返回成功提示</li>
-</ul>
-<p><strong>IO多路复用模型</strong>：系统提供一类函数（select、poll、epoll），它们可以同时监控多个fd文件描述符，任何一个返回内核数据就绪，应用进程再发起系统调用。</p>
-<table>
-<thead>
-<tr>
-<th align="center"></th>
-<th align="center">select</th>
-<th align="center">poll</th>
-<th align="center">epoll</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">底层数据结构</td>
-<td align="center">数组</td>
-<td align="center">链表</td>
-<td align="center">红黑树和链表</td>
-</tr>
-<tr>
-<td align="center">获取就绪的fd</td>
-<td align="center">遍历</td>
-<td align="center">遍历</td>
-<td align="center">事件回调</td>
-</tr>
-<tr>
-<td align="center">事件复杂度</td>
-<td align="center">O(n)</td>
-<td align="center">O(n)</td>
-<td align="center">O(1)</td>
-</tr>
-<tr>
-<td align="center">最大连接数</td>
-<td align="center">1024</td>
-<td align="center">无限制</td>
-<td align="center">无限制</td>
-</tr>
-<tr>
-<td align="center">fd数据拷贝</td>
-<td align="center">每次调用select，需要将fd数据从用户空间拷贝到内核空间</td>
-<td align="center">每次调用poll，需要将fd数据从用户空间拷贝到内核空间</td>
-<td align="center">使用内存映射，不需要从用户空间频繁拷贝fd数据到内核空间</td>
-</tr>
-</tbody></table>
-<p><strong>信号驱动IO模型</strong>：不再用主动询问的方式去确认数据是否就绪，而是向内核发送一个信号，然后应用用户进程可以去做别的事，不用阻塞。当内核数据准备好后，再通过信号通知应用进程数据准备好后的可读状态，应用用户进程收到信号之后，立刻调用读写操作。<br><strong>异步IO模型</strong>：前面提到的阻塞、非阻塞、信号驱动、多路复用IO模型，在数据从内核复制到应用缓冲区的时候，都是阻塞的，因此都不算是真正的异步。而异步IO可以实现IO全流程的非阻塞，就是应用进程发出系统调用后，是立即返回的，但是立即返回的不是处理结果，而是表示类似提交成功的意思。等内核数据准备好，将数据拷贝到用户缓冲区，发送信号通知用户进程IO操作执行完毕。</p>
-<h3 id="事件处理模型"><a href="#事件处理模型" class="headerlink" title="事件处理模型"></a>事件处理模型</h3><p>服务器程序通常需要处理三类事件：I&#x2F;O 事件、信号及定时事件。随着网络设计模式的兴起，Reactor和Proactor事件处理模式应运而生。同步IO模型通常用于实现Reactor模式，异步IO模型则用于实现Proactor模式。<br><strong>Reactor模式</strong>：<br>Reactor模式要求主线程（I&#x2F;O 处理单元）只负责监听文件描述符上是否有事件发生，有的话就立即将该事件通知工作线程（逻辑单元）。除此之外，主线程不做任何其他实质性的工作。读写数据，接受新的连接，以及处理客户请求均在工作线程中完成。使用同步I&#x2F;O模型（以epoll_wait为例）实现的Reactor模式的工作流程是：</p>
-<ol>
-<li>主线程往epoll内核事件表中注册socket上的读就绪事件。</li>
-<li>主线程调用epoll_wait等待socket上有数据可读。</li>
-<li>当socket上有数据可读时，epoll_wait通知主线程。主线程则将socket可读事件放入请求队列。</li>
-<li>睡眠在请求队列上的某个工作线程被唤醒，它从socket读取数据，并处理客户请求，然后往epoll内核事件表中注册该socket上的写就绪事件。</li>
-<li>主线程调用epoll_wait等待socket可写。</li>
-<li>当socket可写时，epoll_wait通知主线程。主线程将socket可写事件放入请求队列。</li>
-<li>睡眠在请求队列上的某个工作进程被唤醒，它往socket上写入服务器处理客户请求的结果。</li>
-</ol>
-<p><strong>Proactor模式</strong>：<br>与Reactor模式不同，Proactor模式将所有I&#x2F;O操作都交给主线程和内核来处理,工作线程仅仅负责业务逻辑。使用异步I&#x2F;O模型（以aio_read和aio_write为例）实现的Proactor 模式的工作流程是：</p>
-<ol>
-<li>主线程调用aio_read函数向内核注册socket上的读完成事件,并告诉内核用户读缓冲区的位置，以及读操作完成时如何通知应用程序(这里以信号为例)。</li>
-<li>主线程继续处理其他逻辑。</li>
-<li>当socket上的数据被读入用户缓冲区后，内核将向应用程序发送一个信号，以通知应用程序数据已经可用。</li>
-<li>应用程序预先定义好的信号处理函数选择一个工作线程来处理客户请求。工作线程处理完客户请求之后，调用aio_write函数向内核注册socket上的写完成事件，并告诉内核用户写缓冲区的位置，以及写操作完成时如何通知应用程序（仍然以信号为例）</li>
-<li>主线程继续处理其他逻辑</li>
-<li>当用户缓冲区的数据被写入socket之后，内核将向应用程序发送一个信号，以通知应用程序数据已经发送完毕。</li>
-<li>应用程序预先定义好的信号处理函数选择一个工作线程来做善后处理，比如决定是否关闭socket。</li>
-</ol>
-<h3 id="同步IO模拟Proactor模式"><a href="#同步IO模拟Proactor模式" class="headerlink" title="同步IO模拟Proactor模式"></a>同步IO模拟Proactor模式</h3><p>由于异步I&#x2F;O并不成熟，实际中使用较少，这里将使用同步I&#x2F;O模拟实现proactor模式。同步I&#x2F;O模型的工作流程如下（epoll_wait为例）：</p>
-<ol>
-<li>主线程往epoll内核事件表注册socket上的读就绪事件。</li>
-<li>主线程调用epoll_wait等待socket上有数据可读</li>
-<li>当socket上有数据可读，epoll_wait通知主线程,主线程从socket循环读取数据，直到没有更多数据可读，然后将读取到的数据封装成一个请求对象并插入请求队列。</li>
-<li>睡眠在请求队列上某个工作线程被唤醒，它获得请求对象并处理客户请求，然后往epoll内核事件表中注册该socket上的写就绪事件。</li>
-<li>主线程调用epoll_wait等待socket可写。</li>
-<li>当socket上有数据可写，epoll_wait通知主线程。主线程往socket上写入服务器处理客户请求的结果。</li>
-</ol>
-<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="线程创建函数"><a href="#线程创建函数" class="headerlink" title="线程创建函数"></a>线程创建函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_create</span><span class="params">(<span class="type">pthread_t</span> *tidp, <span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, (<span class="type">void</span>*)(*start_rtn)(<span class="type">void</span>*), <span class="type">void</span> *arg)</span></span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>作用：创建新线程；</li>
-<li>参数：<ul>
-<li>tidp：指向线程标识符的指针；</li>
-<li>attr：设置线程属性；</li>
-<li>start_rtn：线程运行函数的起始地址；</li>
-<li>arg：运行函数的参数；</li>
-</ul>
-</li>
-<li>返回值：若线程创建成功，则返回0。若线程创建失败，则返回出错编号；</li>
-</ul>
-<h3 id="线程分离函数"><a href="#线程分离函数" class="headerlink" title="线程分离函数"></a>线程分离函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_detach</span><span class="params">(<span class="type">pthread_t</span> thread)</span></span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>作用：实现线程分离，不再受主线程管理，由系统接任，线程结束后，其退出状态不由其它线程获取，而由自己自动释放。</li>
-<li>参数：<ul>
-<li>thread：线程id；</li>
-</ul>
-</li>
-<li>返回值：调用成功返回0，失败返回出错编号；</li>
-</ul>
-<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> m_thread_number;        <span class="comment">//线程池中的线程数</span></span><br><span class="line"><span class="type">int</span> m_max_requests;         <span class="comment">//请求队列中允许的最大请求数</span></span><br><span class="line"><span class="type">pthread_t</span> *m_threads;       <span class="comment">//描述线程池的数组，其大小为m_thread_number</span></span><br><span class="line">std::list&lt;T *&gt; m_workqueue; <span class="comment">//请求队列</span></span><br><span class="line">locker m_queuelocker;       <span class="comment">//保护请求队列的互斥锁</span></span><br><span class="line">sem m_queuestat;            <span class="comment">//是否有任务需要处理</span></span><br><span class="line">connection_poll *m_connPool;  <span class="comment">//数据库</span></span><br><span class="line"><span class="type">int</span> m_actor_model;          <span class="comment">//模型切换</span></span><br></pre></td></tr></table></figure>
-<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">threadpool&lt;T&gt;::<span class="built_in">threadpool</span>( <span class="type">int</span> actor_model, connection_poll *connPool, <span class="type">int</span> thread_number, <span class="type">int</span> max_requests) : <span class="built_in">m_actor_model</span>(actor_model),<span class="built_in">m_thread_number</span>(thread_number), <span class="built_in">m_max_requests</span>(max_requests), <span class="built_in">m_threads</span>(<span class="literal">NULL</span>),<span class="built_in">m_connPool</span>(connPool)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (thread_number &lt;= <span class="number">0</span> || max_requests &lt;= <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    m_threads = <span class="keyword">new</span> <span class="type">pthread_t</span>[m_thread_number];</span><br><span class="line">    <span class="keyword">if</span> (!m_threads)</span><br><span class="line">        <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; thread_number; ++i)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">pthread_create</span>(m_threads + i, <span class="literal">NULL</span>, worker, <span class="keyword">this</span>) != <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">delete</span>[] m_threads;</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">pthread_detach</span>(m_threads[i]))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">delete</span>[] m_threads;</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>初始化线程池中的线程数、请求队列允许的最大请求数和模型切换标志。建立多个线程，执行work回调函数，同时对线程设置detach属性，此时线程执行完毕后自动回收进程。</p>
-<h3 id="公有线程工作函数"><a href="#公有线程工作函数" class="headerlink" title="公有线程工作函数"></a>公有线程工作函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> *threadpool&lt;T&gt;::<span class="built_in">worker</span>(<span class="type">void</span> *arg)</span><br><span class="line">&#123;</span><br><span class="line">    threadpool *pool = (threadpool *)arg;</span><br><span class="line">    pool-&gt;<span class="built_in">run</span>();</span><br><span class="line">    <span class="keyword">return</span> pool;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>调用私有成员函数run。</p>
-<h3 id="私有线程工作函数"><a href="#私有线程工作函数" class="headerlink" title="私有线程工作函数"></a>私有线程工作函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="type">void</span> threadpool&lt;T&gt;::<span class="built_in">run</span>()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        m_queuestat.<span class="built_in">wait</span>();</span><br><span class="line">        m_queuelocker.<span class="built_in">lock</span>();</span><br><span class="line">        <span class="keyword">if</span> (m_workqueue.<span class="built_in">empty</span>())</span><br><span class="line">        &#123;</span><br><span class="line">            m_queuelocker.<span class="built_in">unlock</span>();</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        T *request = m_workqueue.<span class="built_in">front</span>();</span><br><span class="line">        m_workqueue.<span class="built_in">pop_front</span>();</span><br><span class="line">        m_queuelocker.<span class="built_in">unlock</span>();</span><br><span class="line">        <span class="keyword">if</span> (!request)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">1</span> == m_actor_model)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="number">0</span> == request-&gt;m_state)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (request-&gt;<span class="built_in">read_once</span>())</span><br><span class="line">                &#123;</span><br><span class="line">                    request-&gt;improv = <span class="number">1</span>;</span><br><span class="line">                    <span class="function">connectionRAII <span class="title">mysqlcon</span><span class="params">(&amp;request-&gt;mysql, m_connPool)</span></span>;</span><br><span class="line">                    request-&gt;<span class="built_in">process</span>();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                &#123;</span><br><span class="line">                    request-&gt;improv = <span class="number">1</span>;</span><br><span class="line">                    request-&gt;timer_flag = <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (request-&gt;<span class="built_in">write</span>())</span><br><span class="line">                &#123;</span><br><span class="line">                    request-&gt;improv = <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                &#123;</span><br><span class="line">                    request-&gt;improv = <span class="number">1</span>;</span><br><span class="line">                    request-&gt;timer_flag = <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            connectionRAII <span class="built_in">mysqlcon</span>(&amp;request-&gt;mysql, m_connPool);</span><br><span class="line">            request-&gt;<span class="built_in">process</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>m_actor_model为模型切换标志，0表示proactor模式，1表示reactor模式。m_state为读写标志，0为读，1为写。在读状态下时，如果一次性读函数成功，将improv标志置1，从数据库池中取出一个数据库连接，之后执行处理读取http请求函数，如果一次性读函数失败，将timer_flag标志置1，后续从定时器队列中删除此定时器。在写状态下，执行返回http响应函数，如果失败，同样置timer_flag标志为1。</p>
-]]></content>
-      <categories>
-        <category>webserver</category>
-      </categories>
-      <tags>
-        <tag>学习日志</tag>
-        <tag>线程池</tag>
       </tags>
   </entry>
   <entry>
@@ -995,6 +886,135 @@
       <tags>
         <tag>学习日志</tag>
         <tag>自封装锁</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>线程池</title>
+    <url>/2022/03/05/%E7%BA%BF%E7%A8%8B%E6%B1%A0/</url>
+    <content><![CDATA[<h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>线程池是一种基于池化思想管理和使用线程的机制。它是将多个线程预先存储在一个“池子”内，当有任务出现时可以避免重新创建和销毁线程所带来性能开销，只需要从“池子”内取出相应的线程执行对应的任务即可。当服务器进入正式运行阶段，开始处理客户请求的时候，如果它需要相关的资源，可以直接从池中获取，无需动态分配。当服务器处理完一个客户连接后，可以把相关的资源放回池中，无需执行系统调用释放资源。<br><a href="https://imgtu.com/i/OKcodJ"><img src="https://s1.ax1x.com/2022/05/06/OKcodJ.png" alt="线程池类"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="IO"><a href="#IO" class="headerlink" title="IO"></a>IO</h3><p>IO的英文全称是Input&#x2F;Output，就是输入&#x2F;输出。应用程序发起的一次IO操作包含两个阶段：IO调用——应用程序进程向操作系统内核发起调用，IO执行——操作系统内核完成IO操作。操作系统内核完成IO操作还包括两个阶段：准备数据——内核等待I&#x2F;O设备准备好数据，拷贝数据——将数据从内核缓冲区拷贝到用户进程缓冲区。其实IO就是把进程的内部数据转移到外部设备，或者把外部设备的数据迁移到进程内部。外部设备一般指硬盘、Socket通讯的网卡。一个完整的IO过程包括以下几个步骤：</p>
+<ul>
+<li>应用程序进程向操作系统发起IO调用请求</li>
+<li>操作系统准备数据，把IO外部设备的数据，加载到内核区</li>
+<li>操作系统拷贝数据，即将内核缓冲区的数据，拷贝到用户进程缓冲区</li>
+</ul>
+<h3 id="IO模型"><a href="#IO模型" class="headerlink" title="IO模型"></a>IO模型</h3><p><strong>阻塞IO模型</strong>：应用程序的进程发起IO调用，如果内核的数据还没准备好的话，那应用程序就一直在阻塞等待，一直等到内核数据准备好了，从内核拷贝到用户空间，才返回成功提示。<br><strong>非阻塞IO模型</strong>：应用程序的进程发起IO调用，如果内核的数据还没准备好的话，就返回错误信息给用户进程，让其不需要等待，而是通过轮询的方式再来请求，其基本流程如下：</p>
+<ul>
+<li>应用进程向操作系统内核发起读数据请求</li>
+<li>操作系统内核数据未准备好，立刻返回错误码</li>
+<li>应用程序进程轮询调用，继续向操作系统内核发起读数据请求</li>
+<li>操作系统内核数据准备好了，从内核缓冲区拷贝到用户空间</li>
+<li>完成调用，返回成功提示</li>
+</ul>
+<p><strong>IO多路复用模型</strong>：系统提供一类函数（select、poll、epoll），它们可以同时监控多个fd文件描述符，任何一个返回内核数据就绪，应用进程再发起系统调用。</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">select</th>
+<th align="center">poll</th>
+<th align="center">epoll</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">底层数据结构</td>
+<td align="center">数组</td>
+<td align="center">链表</td>
+<td align="center">红黑树和链表</td>
+</tr>
+<tr>
+<td align="center">获取就绪的fd</td>
+<td align="center">遍历</td>
+<td align="center">遍历</td>
+<td align="center">事件回调</td>
+</tr>
+<tr>
+<td align="center">事件复杂度</td>
+<td align="center">O(n)</td>
+<td align="center">O(n)</td>
+<td align="center">O(1)</td>
+</tr>
+<tr>
+<td align="center">最大连接数</td>
+<td align="center">1024</td>
+<td align="center">无限制</td>
+<td align="center">无限制</td>
+</tr>
+<tr>
+<td align="center">fd数据拷贝</td>
+<td align="center">每次调用select，需要将fd数据从用户空间拷贝到内核空间</td>
+<td align="center">每次调用poll，需要将fd数据从用户空间拷贝到内核空间</td>
+<td align="center">使用内存映射，不需要从用户空间频繁拷贝fd数据到内核空间</td>
+</tr>
+</tbody></table>
+<p><strong>信号驱动IO模型</strong>：不再用主动询问的方式去确认数据是否就绪，而是向内核发送一个信号，然后应用用户进程可以去做别的事，不用阻塞。当内核数据准备好后，再通过信号通知应用进程数据准备好后的可读状态，应用用户进程收到信号之后，立刻调用读写操作。<br><strong>异步IO模型</strong>：前面提到的阻塞、非阻塞、信号驱动、多路复用IO模型，在数据从内核复制到应用缓冲区的时候，都是阻塞的，因此都不算是真正的异步。而异步IO可以实现IO全流程的非阻塞，就是应用进程发出系统调用后，是立即返回的，但是立即返回的不是处理结果，而是表示类似提交成功的意思。等内核数据准备好，将数据拷贝到用户缓冲区，发送信号通知用户进程IO操作执行完毕。</p>
+<h3 id="事件处理模型"><a href="#事件处理模型" class="headerlink" title="事件处理模型"></a>事件处理模型</h3><p>服务器程序通常需要处理三类事件：I&#x2F;O 事件、信号及定时事件。随着网络设计模式的兴起，Reactor和Proactor事件处理模式应运而生。同步IO模型通常用于实现Reactor模式，异步IO模型则用于实现Proactor模式。<br><strong>Reactor模式</strong>：<br>Reactor模式要求主线程（I&#x2F;O 处理单元）只负责监听文件描述符上是否有事件发生，有的话就立即将该事件通知工作线程（逻辑单元）。除此之外，主线程不做任何其他实质性的工作。读写数据，接受新的连接，以及处理客户请求均在工作线程中完成。使用同步I&#x2F;O模型（以epoll_wait为例）实现的Reactor模式的工作流程是：</p>
+<ol>
+<li>主线程往epoll内核事件表中注册socket上的读就绪事件。</li>
+<li>主线程调用epoll_wait等待socket上有数据可读。</li>
+<li>当socket上有数据可读时，epoll_wait通知主线程。主线程则将socket可读事件放入请求队列。</li>
+<li>睡眠在请求队列上的某个工作线程被唤醒，它从socket读取数据，并处理客户请求，然后往epoll内核事件表中注册该socket上的写就绪事件。</li>
+<li>主线程调用epoll_wait等待socket可写。</li>
+<li>当socket可写时，epoll_wait通知主线程。主线程将socket可写事件放入请求队列。</li>
+<li>睡眠在请求队列上的某个工作进程被唤醒，它往socket上写入服务器处理客户请求的结果。</li>
+</ol>
+<p><a href="https://imgtu.com/i/O1NiEq"><img src="https://s1.ax1x.com/2022/05/08/O1NiEq.png" alt="Reactor模式"></a><br><strong>Proactor模式</strong>：<br>与Reactor模式不同，Proactor模式将所有I&#x2F;O操作都交给主线程和内核来处理,工作线程仅仅负责业务逻辑。使用异步I&#x2F;O模型（以aio_read和aio_write为例）实现的Proactor 模式的工作流程是：</p>
+<ol>
+<li>主线程调用aio_read函数向内核注册socket上的读完成事件,并告诉内核用户读缓冲区的位置，以及读操作完成时如何通知应用程序(这里以信号为例)。</li>
+<li>主线程继续处理其他逻辑。</li>
+<li>当socket上的数据被读入用户缓冲区后，内核将向应用程序发送一个信号，以通知应用程序数据已经可用。</li>
+<li>应用程序预先定义好的信号处理函数选择一个工作线程来处理客户请求。工作线程处理完客户请求之后，调用aio_write函数向内核注册socket上的写完成事件，并告诉内核用户写缓冲区的位置，以及写操作完成时如何通知应用程序（仍然以信号为例）</li>
+<li>主线程继续处理其他逻辑</li>
+<li>当用户缓冲区的数据被写入socket之后，内核将向应用程序发送一个信号，以通知应用程序数据已经发送完毕。</li>
+<li>应用程序预先定义好的信号处理函数选择一个工作线程来做善后处理，比如决定是否关闭socket。</li>
+</ol>
+<p><a href="https://imgtu.com/i/O1t43D"><img src="https://s1.ax1x.com/2022/05/08/O1t43D.png" alt="Proactor模式"></a></p>
+<h3 id="同步IO模拟Proactor模式"><a href="#同步IO模拟Proactor模式" class="headerlink" title="同步IO模拟Proactor模式"></a>同步IO模拟Proactor模式</h3><p>由于异步I&#x2F;O并不成熟，实际中使用较少，这里将使用同步I&#x2F;O模拟实现proactor模式。同步I&#x2F;O模型的工作流程如下（epoll_wait为例）：</p>
+<ol>
+<li>主线程往epoll内核事件表注册socket上的读就绪事件。</li>
+<li>主线程调用epoll_wait等待socket上有数据可读</li>
+<li>当socket上有数据可读，epoll_wait通知主线程,主线程从socket循环读取数据，直到没有更多数据可读，然后将读取到的数据封装成一个请求对象并插入请求队列。</li>
+<li>睡眠在请求队列上某个工作线程被唤醒，它获得请求对象并处理客户请求，然后往epoll内核事件表中注册该socket上的写就绪事件。</li>
+<li>主线程调用epoll_wait等待socket可写。</li>
+<li>当socket上有数据可写，epoll_wait通知主线程。主线程往socket上写入服务器处理客户请求的结果。</li>
+</ol>
+<p><a href="https://imgtu.com/i/O1NKbR"><img src="https://s1.ax1x.com/2022/05/08/O1NKbR.png" alt="模拟模式"></a></p>
+<h2 id="基础API"><a href="#基础API" class="headerlink" title="基础API"></a>基础API</h2><h3 id="线程创建函数"><a href="#线程创建函数" class="headerlink" title="线程创建函数"></a>线程创建函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_create</span><span class="params">(<span class="type">pthread_t</span> *tidp, <span class="type">const</span> <span class="type">pthread_attr_t</span> *attr, (<span class="type">void</span>*)(*start_rtn)(<span class="type">void</span>*), <span class="type">void</span> *arg)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：创建新线程；</li>
+<li>参数：<ul>
+<li>tidp：指向线程标识符的指针；</li>
+<li>attr：设置线程属性；</li>
+<li>start_rtn：线程运行函数的起始地址；</li>
+<li>arg：运行函数的参数；</li>
+</ul>
+</li>
+<li>返回值：若线程创建成功，则返回0。若线程创建失败，则返回出错编号；</li>
+</ul>
+<h3 id="线程分离函数"><a href="#线程分离函数" class="headerlink" title="线程分离函数"></a>线程分离函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">pthread_detach</span><span class="params">(<span class="type">pthread_t</span> thread)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>作用：实现线程分离，不再受主线程管理，由系统接任，线程结束后，其退出状态不由其它线程获取，而由自己自动释放。</li>
+<li>参数：<ul>
+<li>thread：线程id；</li>
+</ul>
+</li>
+<li>返回值：调用成功返回0，失败返回出错编号；</li>
+</ul>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> m_thread_number;        <span class="comment">//线程池中的线程数</span></span><br><span class="line"><span class="type">int</span> m_max_requests;         <span class="comment">//请求队列中允许的最大请求数</span></span><br><span class="line"><span class="type">pthread_t</span> *m_threads;       <span class="comment">//描述线程池的数组，其大小为m_thread_number</span></span><br><span class="line">std::list&lt;T *&gt; m_workqueue; <span class="comment">//请求队列</span></span><br><span class="line">locker m_queuelocker;       <span class="comment">//保护请求队列的互斥锁</span></span><br><span class="line">sem m_queuestat;            <span class="comment">//是否有任务需要处理</span></span><br><span class="line">connection_poll *m_connPool;  <span class="comment">//数据库</span></span><br><span class="line"><span class="type">int</span> m_actor_model;          <span class="comment">//模型切换</span></span><br></pre></td></tr></table></figure>
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">threadpool&lt;T&gt;::<span class="built_in">threadpool</span>( <span class="type">int</span> actor_model, connection_poll *connPool, <span class="type">int</span> thread_number, <span class="type">int</span> max_requests) : <span class="built_in">m_actor_model</span>(actor_model),<span class="built_in">m_thread_number</span>(thread_number), <span class="built_in">m_max_requests</span>(max_requests), <span class="built_in">m_threads</span>(<span class="literal">NULL</span>),<span class="built_in">m_connPool</span>(connPool)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (thread_number &lt;= <span class="number">0</span> || max_requests &lt;= <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    m_threads = <span class="keyword">new</span> <span class="type">pthread_t</span>[m_thread_number];</span><br><span class="line">    <span class="keyword">if</span> (!m_threads)</span><br><span class="line">        <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; thread_number; ++i)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">pthread_create</span>(m_threads + i, <span class="literal">NULL</span>, worker, <span class="keyword">this</span>) != <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">delete</span>[] m_threads;</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">pthread_detach</span>(m_threads[i]))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">delete</span>[] m_threads;</span><br><span class="line">            <span class="keyword">throw</span> std::<span class="built_in">exception</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初始化线程池中的线程数、请求队列允许的最大请求数和模型切换标志。建立多个线程，执行work回调函数，同时对线程设置detach属性，此时线程执行完毕后自动回收进程。</p>
+<h3 id="公有线程工作函数"><a href="#公有线程工作函数" class="headerlink" title="公有线程工作函数"></a>公有线程工作函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> *threadpool&lt;T&gt;::<span class="built_in">worker</span>(<span class="type">void</span> *arg)</span><br><span class="line">&#123;</span><br><span class="line">    threadpool *pool = (threadpool *)arg;</span><br><span class="line">    pool-&gt;<span class="built_in">run</span>();</span><br><span class="line">    <span class="keyword">return</span> pool;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用私有成员函数run。</p>
+<h3 id="私有线程工作函数"><a href="#私有线程工作函数" class="headerlink" title="私有线程工作函数"></a>私有线程工作函数</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="type">void</span> threadpool&lt;T&gt;::<span class="built_in">run</span>()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">while</span> (<span class="literal">true</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        m_queuestat.<span class="built_in">wait</span>();</span><br><span class="line">        m_queuelocker.<span class="built_in">lock</span>();</span><br><span class="line">        <span class="keyword">if</span> (m_workqueue.<span class="built_in">empty</span>())</span><br><span class="line">        &#123;</span><br><span class="line">            m_queuelocker.<span class="built_in">unlock</span>();</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        T *request = m_workqueue.<span class="built_in">front</span>();</span><br><span class="line">        m_workqueue.<span class="built_in">pop_front</span>();</span><br><span class="line">        m_queuelocker.<span class="built_in">unlock</span>();</span><br><span class="line">        <span class="keyword">if</span> (!request)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">if</span> (<span class="number">1</span> == m_actor_model)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="number">0</span> == request-&gt;m_state)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (request-&gt;<span class="built_in">read_once</span>())</span><br><span class="line">                &#123;</span><br><span class="line">                    request-&gt;improv = <span class="number">1</span>;</span><br><span class="line">                    <span class="function">connectionRAII <span class="title">mysqlcon</span><span class="params">(&amp;request-&gt;mysql, m_connPool)</span></span>;</span><br><span class="line">                    request-&gt;<span class="built_in">process</span>();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                &#123;</span><br><span class="line">                    request-&gt;improv = <span class="number">1</span>;</span><br><span class="line">                    request-&gt;timer_flag = <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (request-&gt;<span class="built_in">write</span>())</span><br><span class="line">                &#123;</span><br><span class="line">                    request-&gt;improv = <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                &#123;</span><br><span class="line">                    request-&gt;improv = <span class="number">1</span>;</span><br><span class="line">                    request-&gt;timer_flag = <span class="number">1</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            connectionRAII <span class="built_in">mysqlcon</span>(&amp;request-&gt;mysql, m_connPool);</span><br><span class="line">            request-&gt;<span class="built_in">process</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>m_actor_model为模型切换标志，0表示proactor模式，1表示reactor模式。m_state为读写标志，0为读，1为写。在读状态下时，如果一次性读函数成功，将improv标志置1，从数据库池中取出一个数据库连接，之后执行处理读取http请求函数，如果一次性读函数失败，将timer_flag标志置1，后续从定时器队列中删除此定时器。在写状态下，执行返回http响应函数，如果失败，同样置timer_flag标志为1。</p>
+]]></content>
+      <categories>
+        <category>webserver</category>
+      </categories>
+      <tags>
+        <tag>学习日志</tag>
+        <tag>线程池</tag>
       </tags>
   </entry>
 </search>

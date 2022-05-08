@@ -20,16 +20,16 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="整体概述">
+  <meta name="description" content="整体概述基于浏览器&#x2F;服务器（B&#x2F;S）模型，实现了Web服务器的基本功能，用户通过浏览器实现，一部分事务逻辑在浏览器实现，主要事务逻辑在服务端实现，主要可以分为三层架构：  表示层：web浏览器。位于客户端，其任务是通过web浏览器向网络上的某个web服务器提出服务请求 功能层：具有应用程序扩展功能的web服务器，负责事物逻辑处理，位于web服务器端，其任务是接受用户的请求，进行">
 <meta property="og:type" content="article">
 <meta property="og:title" content="WebServer类">
 <meta property="og:url" content="http://example.com/2022/03/24/WebServer%E7%B1%BB/index.html">
 <meta property="og:site_name" content="gly的学习博客">
-<meta property="og:description" content="整体概述">
+<meta property="og:description" content="整体概述基于浏览器&#x2F;服务器（B&#x2F;S）模型，实现了Web服务器的基本功能，用户通过浏览器实现，一部分事务逻辑在浏览器实现，主要事务逻辑在服务端实现，主要可以分为三层架构：  表示层：web浏览器。位于客户端，其任务是通过web浏览器向网络上的某个web服务器提出服务请求 功能层：具有应用程序扩展功能的web服务器，负责事物逻辑处理，位于web服务器端，其任务是接受用户的请求，进行">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://s1.ax1x.com/2022/05/07/OQMG6K.png">
 <meta property="article:published_time" content="2022-03-24T01:24:34.000Z">
-<meta property="article:modified_time" content="2022-05-07T14:24:16.632Z">
+<meta property="article:modified_time" content="2022-05-08T04:57:19.181Z">
 <meta property="article:author" content="gong luyang">
 <meta property="article:tag" content="学习日志">
 <meta property="article:tag" content="WebServer类">
@@ -223,7 +223,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:24:16" itemprop="dateModified" datetime="2022-05-07T22:24:16+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-08 12:57:19" itemprop="dateModified" datetime="2022-05-08T12:57:19+08:00">2022-05-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -246,7 +246,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/OQMG6K"><img src="https://s1.ax1x.com/2022/05/07/OQMG6K.png" alt="服务器类"></a></p>
+        <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>基于浏览器&#x2F;服务器（B&#x2F;S）模型，实现了Web服务器的基本功能，用户通过浏览器实现，一部分事务逻辑在浏览器实现，主要事务逻辑在服务端实现，主要可以分为三层架构：</p>
+<ul>
+<li>表示层：web浏览器。位于客户端，其任务是通过web浏览器向网络上的某个web服务器提出服务请求</li>
+<li>功能层：具有应用程序扩展功能的web服务器，负责事物逻辑处理，位于web服务器端，其任务是接受用户的请求，进行数据库连接</li>
+<li>数据层：数据库服务器。负责数据处理逻辑，位于数据库服务器端，其任务是接受web服务器对数据库 的操纵请求，实现对数据库查询、修改、更新等功能</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/OQMG6K"><img src="https://s1.ax1x.com/2022/05/07/OQMG6K.png" alt="服务器类"></a></p>
 <span id="more"></span>
 <h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="Socket通信"><a href="#Socket通信" class="headerlink" title="Socket通信"></a>Socket通信</h3><p>Socket（套接字）用来描述IP地址和端口，是通信链的句柄，应用程序可以通过Socket向网络发送请求或者应答网络请求。Socket是支持TCP&#x2F;IP协议的网络通信的基本操作单元，是对网络通信过程中端点的抽象表示，包含了进行网络通信所必须的五种信息：连接所使用的协议；本地主机的IP地址；本地远程的协议端口；远程主机的IP地址；远程地址的协议端口。在基于TCP协议的Socket通信过程中，服务端首先声明一个Socket对象并指定端口号，然后调用accept方法接受客户端的数据。accept方法在没有数据进行接受时处于堵塞状态；客户端创建Socket对象，执行服务器端的IP地址和端口号，与服务端建立通信。</p>
 <h3 id="字节序"><a href="#字节序" class="headerlink" title="字节序"></a>字节序</h3><p>不同的CPU有不同的字节序类型 这些字节序是指整数在内存中保存的顺序 这个叫做主机字节序，最常见的有两种，小端：将低序字节存储在起始地址；大端：将高序字节存储在起始地址。网络字节顺序是TCP&#x2F;IP中规定好的一种数据表示格式，它与具体的CPU类型、操作系统等无关，从而可以保证数据在不同主机之间传输时能够被正确解释。网络字节顺序采用大端方式。为了在主机字节序和网络字节序中进行转换，提供了四个转换函数：</p>

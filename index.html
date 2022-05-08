@@ -217,7 +217,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:24:16" itemprop="dateModified" datetime="2022-05-07T22:24:16+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-08 12:57:19" itemprop="dateModified" datetime="2022-05-08T12:57:19+08:00">2022-05-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -240,7 +240,13 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/OQMG6K"><img src="https://s1.ax1x.com/2022/05/07/OQMG6K.png" alt="服务器类"></a></p>
+          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>基于浏览器&#x2F;服务器（B&#x2F;S）模型，实现了Web服务器的基本功能，用户通过浏览器实现，一部分事务逻辑在浏览器实现，主要事务逻辑在服务端实现，主要可以分为三层架构：</p>
+<ul>
+<li>表示层：web浏览器。位于客户端，其任务是通过web浏览器向网络上的某个web服务器提出服务请求</li>
+<li>功能层：具有应用程序扩展功能的web服务器，负责事物逻辑处理，位于web服务器端，其任务是接受用户的请求，进行数据库连接</li>
+<li>数据层：数据库服务器。负责数据处理逻辑，位于数据库服务器端，其任务是接受web服务器对数据库 的操纵请求，实现对数据库查询、修改、更新等功能</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/OQMG6K"><img src="https://s1.ax1x.com/2022/05/07/OQMG6K.png" alt="服务器类"></a></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/03/24/WebServer%E7%B1%BB/#more" rel="contents">
@@ -298,7 +304,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:23:58" itemprop="dateModified" datetime="2022-05-07T22:23:58+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-08 11:44:15" itemprop="dateModified" datetime="2022-05-08T11:44:15+08:00">2022-05-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -622,7 +628,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:23:43" itemprop="dateModified" datetime="2022-05-07T22:23:43+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-08 13:23:24" itemprop="dateModified" datetime="2022-05-08T13:23:24+08:00">2022-05-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -784,7 +790,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:25:35" itemprop="dateModified" datetime="2022-05-07T22:25:35+08:00">2022-05-07</time>
+                <time title="修改时间：2022-05-08 10:23:36" itemprop="dateModified" datetime="2022-05-08T10:23:36+08:00">2022-05-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -807,7 +813,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2>
+          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>使用C++语言在Linux环境下搭建轻量级Web服务器，属于网络编程的简单实现，实现了以下功能：</p>
+<ul>
+<li>结合线程池、socket套接字、epoll函数实现多线程的并发模型，通过标志位切换LT&#x2F;ET模式、Reactor&#x2F;模拟Proactor模式</li>
+<li>结合主状态机、从状态机解析HTTP请求报文，可以处理GET和POST请求，返回服务器图片、视频资源</li>
+<li>使用服务器内部数据库保存用户名、登录密码，实现用户通过浏览器进行注册、登录功能</li>
+<li>基于有序链表实现定时器，关闭超时的非活跃连接</li>
+<li>结合单例模式和阻塞队列实现异步写日志模式，记录服务器的运行状态</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/O1CC7V"><img src="https://s1.ax1x.com/2022/05/08/O1CC7V.png" alt="WebServer"></a></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/03/01/main%E4%B8%BB%E5%87%BD%E6%95%B0/#more" rel="contents">
