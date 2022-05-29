@@ -28,7 +28,7 @@
 <meta property="og:description" content="分布式缓存项目实现基于C++的分布式缓存系统，设计了多Master、多Cache Server以及若干Client并存的分布式缓存架构，能够具有基础的数据读写、分布获取、状态上报功能，同时具备容灾能力。 功能 单个Cache server采用LRU机制保存指定数量的key，并主动淘汰多余的key，同时使用基于epoll和线程池的架构高并发地进行数据收发。 Cache server使用一致哈希算法实">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-05-20T05:01:21.000Z">
-<meta property="article:modified_time" content="2022-05-29T09:46:20.555Z">
+<meta property="article:modified_time" content="2022-05-29T09:48:27.256Z">
 <meta property="article:author" content="gong luyang">
 <meta name="twitter:card" content="summary">
 
@@ -229,7 +229,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 17:46:20" itemprop="dateModified" datetime="2022-05-29T17:46:20+08:00">2022-05-29</time>
+                <time title="修改时间：2022-05-29 17:48:27" itemprop="dateModified" datetime="2022-05-29T17:48:27+08:00">2022-05-29</time>
               </span>
 
           
@@ -260,7 +260,10 @@
 <li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99">cache模块—数据读写</a></li>
 <li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85">cache模块—心跳包</a></li>
 <li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/16/client%E6%A8%A1%E5%9D%97/">client模块</a></li>
-<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/20/master%E6%A8%A1%E5%9D%97/">master模块</a><h1 id="WebServer项目"><a href="#WebServer项目" class="headerlink" title="WebServer项目"></a>WebServer项目</h1>使用C++语言在Linux环境下搭建<a target="_blank" rel="noopener" href="https://github.com/glyhust/GlyWebServer">轻量级Web服务器</a><h3 id="功能-1"><a href="#功能-1" class="headerlink" title="功能"></a>功能</h3></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/20/master%E6%A8%A1%E5%9D%97/">master模块</a></li>
+</ul>
+<h1 id="WebServer项目"><a href="#WebServer项目" class="headerlink" title="WebServer项目"></a>WebServer项目</h1><p>使用C++语言在Linux环境下搭建<a target="_blank" rel="noopener" href="https://github.com/glyhust/GlyWebServer">轻量级Web服务器</a></p>
+<h3 id="功能-1"><a href="#功能-1" class="headerlink" title="功能"></a>功能</h3><ul>
 <li>结合线程池、socket套接字、epoll函数实现多线程的并发模型，通过标志位切换LT&#x2F;ET模式、Reactor&#x2F;模拟Proactor模式</li>
 <li>结合主状态机、从状态机解析HTTP请求报文，可以处理GET和POST请求，返回服务器图片、视频资源</li>
 <li>使用服务器内部数据库保存用户名、登录密码，实现用户通过浏览器进行注册、登录功能</li>
