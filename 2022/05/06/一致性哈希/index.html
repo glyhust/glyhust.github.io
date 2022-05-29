@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="整体概述对于一个分布式key-value型缓存系统，某个key应该到哪个或者哪些节点上获得，应该是确定的。哈希算法可以保证对同一个关键字进行哈希计算，每次计算都是相同的值，这样就可以将某个key确定到一个节点上，但是如果节点数量发生了变化，也就是在对系统做扩容或者缩容时，必须迁移改变了映射关系的数据。然而哈希算法在面对节点数量变化时，最坏情况下所有数据都需要迁移，成本高。因此需要采用一致性哈希算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一致性哈希">
+<meta property="og:url" content="http://example.com/2022/05/06/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/index.html">
+<meta property="og:site_name" content="gly的学习博客">
+<meta property="og:description" content="整体概述对于一个分布式key-value型缓存系统，某个key应该到哪个或者哪些节点上获得，应该是确定的。哈希算法可以保证对同一个关键字进行哈希计算，每次计算都是相同的值，这样就可以将某个key确定到一个节点上，但是如果节点数量发生了变化，也就是在对系统做扩容或者缩容时，必须迁移改变了映射关系的数据。然而哈希算法在面对节点数量变化时，最坏情况下所有数据都需要迁移，成本高。因此需要采用一致性哈希算法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/27/XmwHTH.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/27/XmDCJs.png">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/27/Xms8aD.png">
+<meta property="article:published_time" content="2022-05-06T10:01:21.000Z">
+<meta property="article:modified_time" content="2022-05-29T05:57:23.293Z">
+<meta property="article:author" content="gong luyang">
+<meta property="article:tag" content="学习日志">
+<meta property="article:tag" content="一致性哈希">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/05/27/XmwHTH.png">
+
+<link rel="canonical" href="http://example.com/2022/05/06/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>一致性哈希 | gly的学习博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gly的学习博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">既是学习记录 又是技术分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/06/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
+      <meta itemprop="name" content="gong luyang">
+      <meta itemprop="description" content="learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gly的学习博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          一致性哈希
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-05-06 18:01:21" itemprop="dateCreated datePublished" datetime="2022-05-06T18:01:21+08:00">2022-05-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-29 13:57:23" itemprop="dateModified" datetime="2022-05-29T13:57:23+08:00">2022-05-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>对于一个分布式key-value型缓存系统，某个key应该到哪个或者哪些节点上获得，应该是确定的。哈希算法可以保证对同一个关键字进行哈希计算，每次计算都是相同的值，这样就可以将某个key确定到一个节点上，但是如果节点数量发生了变化，也就是在对系统做扩容或者缩容时，必须迁移改变了映射关系的数据。然而哈希算法在面对节点数量变化时，最坏情况下所有数据都需要迁移，成本高。因此需要采用一致性哈希算法，与哈希算法的不同之处在于，哈希算法是对节点的数量进行取模计算，而一致性哈希算法是对2^32进行取模运算。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/XmwHTH"><img src="https://s1.ax1x.com/2022/05/27/XmwHTH.png" alt="哈希环"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="一致性哈希理论"><a href="#一致性哈希理论" class="headerlink" title="一致性哈希理论"></a>一致性哈希理论</h3><ul>
+<li>把对2^32进行取模运算的结果值组织成一个圆环，可以把这个圆想象成由2^32个点组成的圆（下图a）。</li>
+<li>对存储节点进行哈希计算，例如根据节点的IP地址进行哈希（下图b）；当对数据进行存储或访问时，对数据进行哈希映射，根据映射的结果值往顺时针的方向找到第一个节点，就是存储该数据的节点（下图c）。</li>
+<li>当增加（下图d）或者移除（下图e）一个节点时，仅影响该节点在哈希环上顺时针相邻的后继节点，其它数据不会受到影响。</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/XmDCJs"><img src="https://s1.ax1x.com/2022/05/27/XmDCJs.png" alt="一致性哈希理论"></a></p>
+<h3 id="虚拟结点"><a href="#虚拟结点" class="headerlink" title="虚拟结点"></a>虚拟结点</h3><p>一致性哈希算法并不保证节点能够在哈希环上分布均匀，这样就会带来一个问题，会有大量的请求集中在一个节点上（下图左），在这种节点分布不均匀的情况下，进行容灾与扩容时，哈希环上的相邻节点容易受到过大影响，容易发生雪崩式的连锁反应。<br>因此要想解除节点在哈希环上分配不均匀的问题，就是要有大量的节点，当实际上我们没有那么多节点，所以需要加入虚拟节点，也就是对一个真实节点做多个副本。具体做法是，不再将真实节点映射到哈希环上，而是将虚拟节点映射到哈希环上（下图右），并将虚拟节点映射到实际节点。</p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/Xms8aD"><img src="https://s1.ax1x.com/2022/05/27/Xms8aD.png" alt="虚拟结点"></a></p>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="GETHash函数"><a href="#GETHash函数" class="headerlink" title="GETHash函数"></a>GETHash函数</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">uint32_t</span> <span class="title">ConsistentHash::GETHash</span><span class="params">(string key)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">const</span> <span class="type">int</span> p=<span class="number">16777619</span>;</span><br><span class="line">    <span class="type">uint32_t</span> hash=<span class="number">2166136261</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> index=<span class="number">0</span>;index&lt;key.<span class="built_in">size</span>();index++)</span><br><span class="line">    &#123;</span><br><span class="line">        hash=(hash^key[index])*p;</span><br><span class="line">    &#125;</span><br><span class="line">    hash+=hash&lt;&lt;<span class="number">13</span>;</span><br><span class="line">    hash^=hash&gt;&gt;<span class="number">7</span>;</span><br><span class="line">    hash+=hash&lt;&lt;<span class="number">3</span>;</span><br><span class="line">    hash^=hash&gt;&gt;<span class="number">17</span>;</span><br><span class="line">    hash+=hash&lt;&lt;<span class="number">5</span>;</span><br><span class="line">    <span class="keyword">if</span>(hash&lt;<span class="number">0</span>)</span><br><span class="line">        hash=-hash;</span><br><span class="line">    <span class="keyword">return</span> hash;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>采用的32位Fowler-Noll-Vo算法,将Cache Server的地址端口以及key映射到环上的哈希算法。该算法能快速哈希大量数据并保持较小的冲突率，具有高度分散性，使得它适用于处理一些非常相近的字符串。</p>
+<h3 id="构造哈希环"><a href="#构造哈希环" class="headerlink" title="构造哈希环"></a>构造哈希环</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ConsistentHash::RefreshIPList</span><span class="params">(<span class="type">const</span> vector&lt;string&gt;&amp; iplist)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    virtualNodes.<span class="built_in">clear</span>();</span><br><span class="line">    serverNodes.<span class="built_in">clear</span>();</span><br><span class="line">    <span class="type">bool</span> f=<span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">auto</span>&amp; ip:iplist)</span><br><span class="line">    &#123;</span><br><span class="line">        f=f&amp;&amp;<span class="built_in">AddServer</span>(ip);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> f;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">ConsistentHash::AddServer</span><span class="params">(<span class="type">const</span> string&amp; nodeIP)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;virtualNodeNum;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        stringstream nodeKey;</span><br><span class="line">        nodeKey&lt;&lt;nodeIP&lt;&lt;<span class="string">&quot;#&quot;</span>&lt;&lt;i;</span><br><span class="line">        <span class="type">uint32_t</span> partition=<span class="built_in">GETHash</span>(nodeKey.<span class="built_in">str</span>());</span><br><span class="line">        virtualNodes.<span class="built_in">insert</span>(&#123;partition,nodeIP&#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">uint32_t</span> partition=<span class="built_in">GETHash</span>(nodeIP);</span><br><span class="line">    serverNodes.<span class="built_in">insert</span>(&#123;partition,nodeIP&#125;);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>根据IP列表构建哈希环，其中virtulNodeNum为设置的虚拟节点数量。</p>
+<h3 id="获得key对应的节点和备份节点"><a href="#获得key对应的节点和备份节点" class="headerlink" title="获得key对应的节点和备份节点"></a>获得key对应的节点和备份节点</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">string <span class="title">ConsistentHash::GetServerIndex</span><span class="params">(<span class="type">const</span> string&amp; key)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">uint32_t</span> partition=<span class="built_in">GETHash</span>(key);</span><br><span class="line">    <span class="keyword">auto</span> it=virtualNodes.<span class="built_in">lower_bound</span>(partition);</span><br><span class="line">    <span class="keyword">if</span>(it==virtualNodes.<span class="built_in">end</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(virtualNodes.<span class="built_in">empty</span>())</span><br><span class="line">            cout&lt;&lt;<span class="string">&quot;no available nodes&quot;</span>&lt;&lt;<span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">        <span class="keyword">return</span> virtualNodes.<span class="built_in">begin</span>()-&gt;second;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> it-&gt;second;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">string <span class="title">ConsistentHash::GetBackUpServer</span><span class="params">(<span class="type">const</span> string&amp; key)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">uint32_t</span> partition=<span class="built_in">GETHash</span>(key);</span><br><span class="line">    <span class="keyword">auto</span> it=virtualNodes.<span class="built_in">lower_bound</span>(partition);</span><br><span class="line">    <span class="keyword">if</span>(it==virtualNodes.<span class="built_in">end</span>())</span><br><span class="line">        it=virtualNodes.<span class="built_in">begin</span>();</span><br><span class="line">    <span class="keyword">while</span>(it!=virtualNodes.<span class="built_in">end</span>())</span><br><span class="line">    &#123;</span><br><span class="line">        it++;</span><br><span class="line">        <span class="keyword">if</span>(it==virtualNodes.<span class="built_in">end</span>())</span><br><span class="line">            it=virtualNodes.<span class="built_in">begin</span>();</span><br><span class="line">        <span class="keyword">if</span>(it-&gt;second!=<span class="built_in">GetServerIndex</span>(key))</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> it-&gt;second;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过key的哈希值，找到哈希环上顺时针方向上的第一个cache server节点，此为该key对应的存储节点，同时找到备份节点。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/" rel="tag"># 学习日志</a>
+              <a href="/tags/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/" rel="tag"># 一致性哈希</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/05/%E9%80%9A%E4%BF%A1%E6%A0%BC%E5%BC%8F%E5%8F%8A%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0/" rel="prev" title="通信格式及辅助函数">
+      <i class="fa fa-chevron-left"></i> 通信格式及辅助函数
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/" rel="next" title="cache模块——数据读写">
+      cache模块——数据读写 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">整体概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C%E7%90%86%E8%AE%BA"><span class="nav-number">2.1.</span> <span class="nav-text">一致性哈希理论</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E7%BB%93%E7%82%B9"><span class="nav-number">2.2.</span> <span class="nav-text">虚拟结点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">核心代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GETHash%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">GETHash函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%93%88%E5%B8%8C%E7%8E%AF"><span class="nav-number">3.2.</span> <span class="nav-text">构造哈希环</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%BE%97key%E5%AF%B9%E5%BA%94%E7%9A%84%E8%8A%82%E7%82%B9%E5%92%8C%E5%A4%87%E4%BB%BD%E8%8A%82%E7%82%B9"><span class="nav-number">3.3.</span> <span class="nav-text">获得key对应的节点和备份节点</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gong luyang"
+      src="/images/%E5%A4%B4%E5%83%8F.png">
+  <p class="site-author-name" itemprop="name">gong luyang</p>
+  <div class="site-description" itemprop="description">learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/glyhust" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;glyhust" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gly_hk@163.com" title="E-Mail → mailto:gly_hk@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gong luyang</span>
+</div>
+
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  <div class="bg_content">
+  <canvas id="canvas"></canvas>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/dynamic_bg.js"></script>

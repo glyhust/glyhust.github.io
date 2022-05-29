@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="整体概述cache server在运行时，新建一个线程定时向master发送心跳包，以确保master能确定自己的存活状态，同时接收master发送的指令，根据指令不同进行对应的操作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cache模块——心跳包">
+<meta property="og:url" content="http://example.com/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85/index.html">
+<meta property="og:site_name" content="gly的学习博客">
+<meta property="og:description" content="整体概述cache server在运行时，新建一个线程定时向master发送心跳包，以确保master能确定自己的存活状态，同时接收master发送的指令，根据指令不同进行对应的操作。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/28/Xn2JQH.png">
+<meta property="article:published_time" content="2022-05-12T10:01:21.000Z">
+<meta property="article:modified_time" content="2022-05-29T05:58:24.597Z">
+<meta property="article:author" content="gong luyang">
+<meta property="article:tag" content="学习日志">
+<meta property="article:tag" content="cache">
+<meta property="article:tag" content="心跳包">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/05/28/Xn2JQH.png">
+
+<link rel="canonical" href="http://example.com/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>cache模块——心跳包 | gly的学习博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gly的学习博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">既是学习记录 又是技术分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
+      <meta itemprop="name" content="gong luyang">
+      <meta itemprop="description" content="learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gly的学习博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          cache模块——心跳包
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-05-12 18:01:21" itemprop="dateCreated datePublished" datetime="2022-05-12T18:01:21+08:00">2022-05-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-29 13:58:24" itemprop="dateModified" datetime="2022-05-29T13:58:24+08:00">2022-05-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>cache server在运行时，新建一个线程定时向master发送心跳包，以确保master能确定自己的存活状态，同时接收master发送的指令，根据指令不同进行对应的操作。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/Xn2JQH"><img src="https://s1.ax1x.com/2022/05/28/Xn2JQH.png" alt="cache-心跳包"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="缓存扩缩容"><a href="#缓存扩缩容" class="headerlink" title="缓存扩缩容"></a>缓存扩缩容</h3><p>分布式缓存中存在多个cache server节点，当节点增加或者减少时，数据对应的存储节点也需要发送变化。master监控着所有cache server节点发送来的心跳包，因此可以检测到节点变化，此时向其它节点发送指令，进行对应的操作。</p>
+<ul>
+<li>ADD_CACHE_SERVER：扩容命令，说明有新的cache server节点加入，此时将json数据包中的IP列表读出，新建一个线程，通过一致性哈希算法将LRU对象中的所有数据与其对应的缓存节点对应起来，并新建线程向cache server服务器发送对应的所有数据。</li>
+<li>SHUTDOWN_CACHE_SERVER：缩容命令，也就是本cache server服务器需要主动关闭，此时同样将json数据包中的IP列表读出，新建一个线程，通过一致性哈希算法将LRU对象中的所有数据与其对应的缓存节点对应起来，并新建线程向cache server服务器发送对应的所有数据，发送完毕后退出整个程序。</li>
+<li>REFLESH_IP：备份命令，说明此时有其它cache server服务器关闭了，将备份LRU对象中的数据读出，并通过一致性哈希算法与服务器对应起来，如果该数据属于本服务器，则从备份LRU对象中写到LRU对象中，最后分别建立线程向其它cache server服务器发送其对应的所有数据。</li>
+</ul>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="cache发送数据"><a href="#cache发送数据" class="headerlink" title="cache发送数据"></a>cache发送数据</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> *<span class="title">task_connectoth</span><span class="params">(<span class="type">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">pthread_mutex_lock</span>(&amp;transfertooth);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">task_connect_oth</span>* <span class="built_in">taskconnect</span>((<span class="keyword">struct</span> task_connect_oth*) arg);</span><br><span class="line">    <span class="built_in">pthread_mutex_unlock</span>(&amp;transfertooth);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> ipport_s = <span class="built_in">get_ipport</span>(taskconnect-&gt;addr);</span><br><span class="line">    string&amp; ip_oth = ipport_s.ip;</span><br><span class="line">    <span class="type">int</span>&amp; port_oth = ipport_s.port;</span><br><span class="line">    <span class="type">int</span> cachfd = <span class="built_in">Socket</span>(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> cache_oth_addr;</span><br><span class="line">    <span class="built_in">bzero</span>(&amp;cache_oth_addr,<span class="built_in">sizeof</span>(cache_oth_addr));</span><br><span class="line">    cache_oth_addr.sin_family = AF_INET;</span><br><span class="line">    <span class="built_in">inet_pton</span>(AF_INET, (<span class="type">const</span> <span class="type">char</span>*)ip_oth.<span class="built_in">data</span>(), &amp;cache_oth_addr.sin_addr.s_addr);</span><br><span class="line">    cache_oth_addr.sin_port = <span class="built_in">htons</span>(port_oth);</span><br><span class="line">    <span class="type">int</span> ret = <span class="built_in">connect</span>(cachfd, (<span class="keyword">struct</span> sockaddr *)&amp;cache_oth_addr, <span class="built_in">sizeof</span>(cache_oth_addr));</span><br><span class="line">    <span class="keyword">auto</span> flags = <span class="built_in">fcntl</span>(cachfd,F_GETFL,<span class="number">0</span>);</span><br><span class="line">    <span class="built_in">fcntl</span>(cachfd, F_SETFL, flags &amp; O_NONBLOCK);</span><br><span class="line">    <span class="keyword">if</span>(ret&lt;<span class="number">0</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> j=<span class="number">0</span>; j&lt;(*taskconnect-&gt;ipport_and_key)[taskconnect-&gt;addr].<span class="built_in">size</span>(); j++)</span><br><span class="line">    &#123;</span><br><span class="line">        string key = (*taskconnect-&gt;ipport_and_key)[taskconnect-&gt;addr][j];</span><br><span class="line">        string value = (*taskconnect-&gt;LC).<span class="built_in">get</span>(key, <span class="literal">false</span>);</span><br><span class="line">        json write_j = <span class="built_in">Write_oth_ClientCache</span>(key, value);</span><br><span class="line">        string buf = write_j.<span class="built_in">dump</span>()+<span class="string">&quot;\0&quot;</span>;</span><br><span class="line">        <span class="type">int</span> n=<span class="built_in">Write</span>(cachfd, (<span class="type">const</span> <span class="type">char</span> *)buf.<span class="built_in">data</span>(), buf.<span class="built_in">length</span>()+<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span>(n==<span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">Close</span>(cachfd);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">Sleep_ms</span>(<span class="number">100</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">Close</span>(cachfd);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>task_connectoth函数用于cache server与其它cache server建立连接，发送数据。</p>
+<h3 id="cache节点变化"><a href="#cache节点变化" class="headerlink" title="cache节点变化"></a>cache节点变化</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* <span class="title">doit_iplistchange</span><span class="params">(<span class="type">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">pthread_rwlock_wrlock</span>(&amp;shutdown_lock);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">iplistchange_struct</span>* ipchange=(<span class="keyword">struct</span> iplistchange_struct *)arg;</span><br><span class="line">    shared_ptr&lt;unordered_map&lt;string,vector&lt;string&gt;&gt;&gt; ipport_and_key=make_shared&lt;unordered_map&lt;string,vector&lt;string&gt;&gt;&gt;();</span><br><span class="line">    (*ipchange-&gt;key_addr).<span class="built_in">RefreshIPList</span>(*ipchange-&gt;ipport_list);</span><br><span class="line">    <span class="keyword">if</span>(ipchange-&gt;exit_flag)</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;prepare to close...&quot;</span>&lt;&lt;endl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">auto</span> i = (*ipchange-&gt;LC).cache.<span class="built_in">begin</span>(); i!=(*ipchange-&gt;LC).cache.<span class="built_in">end</span>();i++)&#123;</span><br><span class="line">        string key = i-&gt;first;</span><br><span class="line">        string addr = (*ipchange-&gt;key_addr).<span class="built_in">GetServerIndex</span>(key);</span><br><span class="line">        (*ipport_and_key)[addr].<span class="built_in">push_back</span>(key);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">signal</span>(SIGPIPE, SIG_IGN);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">task_connect_oth</span> task_arg;</span><br><span class="line">    task_arg.ipport_and_key = ipport_and_key;</span><br><span class="line">    task_arg.LC = ipchange-&gt;LC;</span><br><span class="line"></span><br><span class="line">    <span class="type">pthread_t</span> takeout_allval[ipport_and_key-&gt;<span class="built_in">size</span>()];</span><br><span class="line">    <span class="type">int</span> count = <span class="number">0</span>;</span><br><span class="line">    <span class="type">int</span> flag = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">auto</span> i = ipport_and_key-&gt;<span class="built_in">begin</span>(); i!=ipport_and_key-&gt;<span class="built_in">end</span>(); i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">Sleep_ms</span>(<span class="number">100</span>);</span><br><span class="line">        <span class="keyword">if</span>(curen_addr==i-&gt;first)</span><br><span class="line">        &#123;</span><br><span class="line">            flag = count++;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">pthread_mutex_lock</span>(&amp;transfertooth);</span><br><span class="line">        task_arg.addr = i-&gt;first;</span><br><span class="line">        <span class="built_in">Pthread_create</span>(&amp;takeout_allval[count++], <span class="literal">nullptr</span>, &amp;task_connectoth, &amp;task_arg);</span><br><span class="line">        <span class="built_in">pthread_mutex_unlock</span>(&amp;transfertooth);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">Sleep_ms</span>(<span class="number">200</span>);</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;ipport_and_key-&gt;<span class="built_in">size</span>(); i++)&#123;</span><br><span class="line">        <span class="keyword">if</span>(flag==i)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        <span class="built_in">pthread_join</span>(takeout_allval[i], <span class="literal">nullptr</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(ipchange-&gt;exit_flag)</span><br><span class="line">    &#123;</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;close done&quot;</span>&lt;&lt;endl;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">pthread_rwlock_unlock</span>(&amp;shutdown_lock);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>doit_iplistchange函数内部根据一致性哈希算法对新的IP列表建立哈希环，然后将LRU中的数据与服务器对应起来，之后遍历所有数据，如果与本服务器对应则不做操作，如果对应于其它服务器，则调用task_connectoth函数发送数据，最后根据exit_flag标志，如果为真则直接退出程序，关闭服务器。</p>
+<h3 id="cache容灾"><a href="#cache容灾" class="headerlink" title="cache容灾"></a>cache容灾</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Heartbeat::reflesh_handler</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">pthread_mutex_lock</span>(&amp;ipchange_lock);</span><br><span class="line">    (*ipport_list).<span class="built_in">clear</span>();</span><br><span class="line">    unordered_set&lt;string&gt; ipnew;</span><br><span class="line">    vector&lt;string&gt; key_send;</span><br><span class="line">    sendout_bk-&gt;<span class="built_in">clear</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;iplist_json[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;iplist&quot;</span>].<span class="built_in">size</span>(); i++)&#123;</span><br><span class="line">        (*ipport_list).<span class="built_in">push_back</span>(iplist_json[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;iplist&quot;</span>][i]);</span><br><span class="line">        ipnew.<span class="built_in">insert</span>((string)iplist_json[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;iplist&quot;</span>][i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">auto</span> i = (*LC_BK).cache.<span class="built_in">begin</span>(); i!=(*LC_BK).cache.<span class="built_in">end</span>();i++)&#123;</span><br><span class="line">        string key = i-&gt;first;</span><br><span class="line">        string addr = (*key_addr).<span class="built_in">GetServerIndex</span>(key);</span><br><span class="line">        <span class="keyword">if</span>(ipnew.<span class="built_in">find</span>(addr)==ipnew.<span class="built_in">end</span>())&#123;</span><br><span class="line">            key_send.<span class="built_in">push_back</span>(key);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    (*key_addr).<span class="built_in">RefreshIPList</span>(*ipport_list);</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>; i&lt;key_send.<span class="built_in">size</span>(); i++)&#123;</span><br><span class="line">        (*sendout_bk)[(*key_addr).<span class="built_in">GetServerIndex</span>(key_send[i])].<span class="built_in">push_back</span>(key_send[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(!(sendout_bk-&gt;<span class="built_in">empty</span>()))&#123;</span><br><span class="line">        <span class="built_in">signal</span>(SIGPIPE, SIG_IGN);</span><br><span class="line">        <span class="type">int</span> count=<span class="number">0</span>;        </span><br><span class="line">        task_arg.LC = LC_BK;</span><br><span class="line">        task_arg.ipport_and_key = sendout_bk;</span><br><span class="line">        <span class="type">int</span> flag=<span class="number">-1</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">auto</span> i = sendout_bk-&gt;<span class="built_in">begin</span>(); i!=sendout_bk-&gt;<span class="built_in">end</span>(); i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(curen_addr==i-&gt;first)&#123;</span><br><span class="line">                <span class="keyword">for</span>(<span class="type">int</span> j=<span class="number">0</span>; j&lt;(*sendout_bk)[curen_addr].<span class="built_in">size</span>(); j++)&#123;</span><br><span class="line">                    string temp_key = (*sendout_bk)[curen_addr][j];</span><br><span class="line">                    string temp_val = LC_BK-&gt;<span class="built_in">get</span>(temp_key, <span class="literal">false</span>);</span><br><span class="line">                    LC-&gt;<span class="built_in">put</span>(temp_key, temp_val);</span><br><span class="line">                &#125;</span><br><span class="line">                flag = count++;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">Sleep_ms</span>(<span class="number">100</span>);</span><br><span class="line">            <span class="built_in">pthread_mutex_lock</span>(&amp;transfertooth);</span><br><span class="line">            task_arg.addr = i-&gt;first;</span><br><span class="line">            <span class="built_in">Pthread_create</span>(&amp;takeout_allval[count++], <span class="literal">nullptr</span>, &amp;task_connectoth, &amp;task_arg);</span><br><span class="line">            <span class="built_in">pthread_mutex_unlock</span>(&amp;transfertooth);        </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">pthread_mutex_unlock</span>(&amp;ipchange_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当系统中有一个cache server服务器关闭时，其它cache server便调用此函数，首先对比json数据包和自身的IP列表，判断在备份LRU中有哪些key需要转移节点，然后判断需要转移的key对应的服务器是否是自身，如果是则从备份LRU中移动到LRU，如果不是则调用task_connectoth函数发送至目标服务器。</p>
+<h3 id="cache发送心跳包"><a href="#cache发送心跳包" class="headerlink" title="cache发送心跳包"></a>cache发送心跳包</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> *<span class="title">heart_beat</span><span class="params">(<span class="type">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">Heartbeat <span class="title">heartbeat_hd</span><span class="params">((<span class="keyword">struct</span> heartbeat_struct *)arg)</span></span>;</span><br><span class="line">    heartbeat_hd.<span class="built_in">heartbeat_connect</span>(<span class="literal">false</span>);</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">        heartbeat_hd.<span class="built_in">heartbeat_send</span>();</span><br><span class="line">        <span class="built_in">Sleep_ms</span>(<span class="number">100</span>);</span><br><span class="line">        <span class="type">int</span> commond = heartbeat_hd.<span class="built_in">is_anycommond</span>();</span><br><span class="line">        <span class="keyword">if</span>(SHUTDOWN_CACHE==commond)&#123;</span><br><span class="line">            heartbeat_hd.<span class="built_in">shutdown_handler</span>();</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(ADD_CACHE==commond)&#123;</span><br><span class="line">            heartbeat_hd.<span class="built_in">add_handler</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(REFLESH_IP==commond)&#123;</span><br><span class="line">            heartbeat_hd.<span class="built_in">reflesh_handler</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">        <span class="built_in">sleep</span>(<span class="number">100</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>cache server服务器在main主函数中创建一个新线程运行heart_beat函数，内部首先调用heartbeat_connect函数与master建立连接，然后定时循环调用heartbeat_send函数向master发送心跳包，使用is_anycommond函数接收master指令，如果json数据包指令为SHUTDOWN_CACHE，说明需要关闭本cache server，此时调用shutdown_handler函数，其内部调用doit_iplistchange函数转移数据；如果指令为ADD_CACHE，说明有新的cache server加入，此时调用add_handler函数，其内部调用doit_iplistchange函数转移数据；如果指令为REFLESH_IP，说明有其它cache server关闭，此时调用reflesh_handle函数，转移备份LRU中属于被关闭cache server的数据。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/" rel="tag"># 学习日志</a>
+              <a href="/tags/cache/" rel="tag"># cache</a>
+              <a href="/tags/%E5%BF%83%E8%B7%B3%E5%8C%85/" rel="tag"># 心跳包</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/" rel="prev" title="cache模块——数据读写">
+      <i class="fa fa-chevron-left"></i> cache模块——数据读写
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/16/client%E6%A8%A1%E5%9D%97/" rel="next" title="client模块">
+      client模块 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">整体概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E6%89%A9%E7%BC%A9%E5%AE%B9"><span class="nav-number">2.1.</span> <span class="nav-text">缓存扩缩容</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">核心代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#cache%E5%8F%91%E9%80%81%E6%95%B0%E6%8D%AE"><span class="nav-number">3.1.</span> <span class="nav-text">cache发送数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cache%E8%8A%82%E7%82%B9%E5%8F%98%E5%8C%96"><span class="nav-number">3.2.</span> <span class="nav-text">cache节点变化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cache%E5%AE%B9%E7%81%BE"><span class="nav-number">3.3.</span> <span class="nav-text">cache容灾</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cache%E5%8F%91%E9%80%81%E5%BF%83%E8%B7%B3%E5%8C%85"><span class="nav-number">3.4.</span> <span class="nav-text">cache发送心跳包</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gong luyang"
+      src="/images/%E5%A4%B4%E5%83%8F.png">
+  <p class="site-author-name" itemprop="name">gong luyang</p>
+  <div class="site-description" itemprop="description">learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/glyhust" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;glyhust" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gly_hk@163.com" title="E-Mail → mailto:gly_hk@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gong luyang</span>
+</div>
+
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  <div class="bg_content">
+  <canvas id="canvas"></canvas>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/dynamic_bg.js"></script>

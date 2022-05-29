@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="整体概述cache server是一个可以同时向多个client提供服务的服务器，其并发能力至关重要，所以采用epoll和线程池架构来提高cache server服务器的并发处理能力，即通过epoll函数监听多个事件，并让对应的处理函数交于线程池中的工作线程处理。同时还需要处理master容灾时备份master发送过来的IP和端口号信息。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cache模块——数据读写">
+<meta property="og:url" content="http://example.com/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/index.html">
+<meta property="og:site_name" content="gly的学习博客">
+<meta property="og:description" content="整体概述cache server是一个可以同时向多个client提供服务的服务器，其并发能力至关重要，所以采用epoll和线程池架构来提高cache server服务器的并发处理能力，即通过epoll函数监听多个事件，并让对应的处理函数交于线程池中的工作线程处理。同时还需要处理master容灾时备份master发送过来的IP和端口号信息。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2022/05/28/XnXmCQ.png">
+<meta property="article:published_time" content="2022-05-10T10:01:21.000Z">
+<meta property="article:modified_time" content="2022-05-29T05:58:19.725Z">
+<meta property="article:author" content="gong luyang">
+<meta property="article:tag" content="学习日志">
+<meta property="article:tag" content="cache">
+<meta property="article:tag" content="数据读写">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2022/05/28/XnXmCQ.png">
+
+<link rel="canonical" href="http://example.com/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>cache模块——数据读写 | gly的学习博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">gly的学习博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">既是学习记录 又是技术分享</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
+      <meta itemprop="name" content="gong luyang">
+      <meta itemprop="description" content="learn">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gly的学习博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          cache模块——数据读写
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-05-10 18:01:21" itemprop="dateCreated datePublished" datetime="2022-05-10T18:01:21+08:00">2022-05-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-29 13:58:19" itemprop="dateModified" datetime="2022-05-29T13:58:19+08:00">2022-05-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>cache server是一个可以同时向多个client提供服务的服务器，其并发能力至关重要，所以采用epoll和线程池架构来提高cache server服务器的并发处理能力，即通过epoll函数监听多个事件，并让对应的处理函数交于线程池中的工作线程处理。同时还需要处理master容灾时备份master发送过来的IP和端口号信息。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/XnXmCQ"><img src="https://s1.ax1x.com/2022/05/28/XnXmCQ.png" alt="cache-数据读写"></a></p>
+<span id="more"></span>
+<h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><h3 id="epoll函数"><a href="#epoll函数" class="headerlink" title="epoll函数"></a>epoll函数</h3><p>epoll是Linux内核为处理大批量文件描述符而作了改进的poll，是Linux下多路复用IO接口select&#x2F;poll的增强版本，在获取事件的时候，它无须遍历整个被侦听的描述符集，只要遍历那些被内核IO事件异步唤醒而加入Ready队列的描述符集合就行了。</p>
+<h3 id="客户端请求"><a href="#客户端请求" class="headerlink" title="客户端请求"></a>客户端请求</h3><p>cache接收到的请求可能是client的，也可能是其它cache server的，还可能是master的，根据json数据包的type可以判断并且做出相应逻辑处理。</p>
+<ul>
+<li>KEY_VALUE_REQUEST：client发起的读数据请求，从LRU中读取出key对应的value，再发送给client。</li>
+<li>KEY_VALUE_RESPOND：client发起的写数据请求，则将数据写入到LRU中。同时通过一致性哈希算法找到该数据对应的备份cache服务器，将该数据的type改成KEY_VALUE_REPONDBK，然后将其发送到该备份服务器。</li>
+<li>KEY_VALUE_RESPONDBK：其它cache server服务器发送的写数据请求，则将数据写入到备份LRU中。</li>
+<li>REFLESH_MASTER：备份master发起的命令，更改master的IP地址和端口号。</li>
+</ul>
+<h2 id="核心代码分析"><a href="#核心代码分析" class="headerlink" title="核心代码分析"></a>核心代码分析</h2><h3 id="建立master连接"><a href="#建立master连接" class="headerlink" title="建立master连接"></a>建立master连接</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WriteRead::WR_listen</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    listenfd = <span class="built_in">Socket</span>(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">    <span class="type">int</span> opt = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">setsockopt</span>(listenfd, SOL_SOCKET, SO_REUSEADDR, &amp;opt, <span class="built_in">sizeof</span>(opt));</span><br><span class="line">    <span class="built_in">bzero</span>(&amp;servaddr, <span class="built_in">sizeof</span>(servaddr));</span><br><span class="line">    servaddr.sin_family = AF_INET;</span><br><span class="line">    servaddr.sin_addr.s_addr = <span class="built_in">inet_addr</span>(CACHESERV_IP);</span><br><span class="line">    servaddr.sin_port = <span class="built_in">htons</span>(CACHESERV_PORT);<span class="comment">//test!!!!!!!!!!!!!</span></span><br><span class="line">    <span class="built_in">Bind</span>(listenfd, (<span class="keyword">struct</span> sockaddr *)&amp;servaddr, <span class="built_in">sizeof</span>(servaddr));</span><br><span class="line">    <span class="built_in">Listen</span>(listenfd, listen_num);</span><br><span class="line">    efd = <span class="built_in">Epoll_create</span>(openmax);</span><br><span class="line">    task_arg_listen.efd = efd;</span><br><span class="line">    task_arg.efd = efd;</span><br><span class="line">    tep.events = EPOLLIN | EPOLLET;</span><br><span class="line">    tep.data.fd = listenfd;</span><br><span class="line">    <span class="built_in">Epoll_ctl</span>(efd, EPOLL_CTL_ADD, listenfd, &amp;tep);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过socket、bind、listen建立socket连接，之后将套接字添加进epoll函数中监听。</p>
+<h3 id="处理新连接请求"><a href="#处理新连接请求" class="headerlink" title="处理新连接请求"></a>处理新连接请求</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WriteRead::WR_listenHandler</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">pthread_mutex_lock</span>(&amp;tasklisten_lock);</span><br><span class="line">    task_arg_listen.cliaddr = &amp;cliaddr;</span><br><span class="line">    task_arg_listen.listenfd = listenfd;</span><br><span class="line">    task_arg_listen.num = ++num;</span><br><span class="line">    <span class="function">Task <span class="title">TT</span><span class="params">(task_listen, &amp;task_arg_listen)</span></span>;</span><br><span class="line">    (*ThrPl).<span class="built_in">addTask</span>(TT);            </span><br><span class="line">    <span class="built_in">pthread_mutex_unlock</span>(&amp;tasklisten_lock);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">task_listen</span><span class="params">(<span class="type">void</span> *task_arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">pthread_rwlock_rdlock</span>(&amp;shutdown_lock);</span><br><span class="line">    <span class="built_in">pthread_mutex_lock</span>(&amp;tasklisten_lock);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">pack_tasklisten</span>* <span class="built_in">task_lst</span>((<span class="keyword">struct</span> pack_tasklisten *)task_arg);</span><br><span class="line">    <span class="built_in">pthread_mutex_unlock</span>(&amp;tasklisten_lock);</span><br><span class="line">        </span><br><span class="line">    <span class="type">socklen_t</span> clilen = <span class="built_in">sizeof</span>(task_lst-&gt;cliaddr);</span><br><span class="line">    <span class="type">int</span> connfd = <span class="built_in">Accept</span>(task_lst-&gt;listenfd, (<span class="keyword">struct</span> sockaddr *)&amp;task_lst-&gt;cliaddr, &amp;clilen);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> cliaddr;</span><br><span class="line">    <span class="type">char</span> str[INET_ADDRSTRLEN];</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;received from &quot;</span>&lt;&lt;<span class="built_in">inet_ntop</span>(AF_INET, &amp;cliaddr.sin_addr, str, <span class="built_in">sizeof</span>(str))&lt;&lt;<span class="string">&quot; at PORT &quot;</span>&lt;&lt;<span class="built_in">ntohs</span>(cliaddr.sin_port)&lt;&lt;endl; </span><br><span class="line">    </span><br><span class="line">    <span class="keyword">auto</span> flag = <span class="built_in">fcntl</span>(connfd, F_GETFL);</span><br><span class="line">    <span class="built_in">fcntl</span>(connfd, F_SETFL, flag | O_NONBLOCK);</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">epoll_event</span> tep;</span><br><span class="line">    tep.events = EPOLLIN | EPOLLOUT | EPOLLET;</span><br><span class="line">    tep.data.fd = connfd;</span><br><span class="line">    <span class="built_in">Epoll_ctl</span>(task_lst-&gt;efd, EPOLL_CTL_ADD, connfd, &amp;tep);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">pthread_rwlock_unlock</span>(&amp;shutdown_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当epoll函数返回的事件是监听套接字时，代表此时有新连接接入，此时调用WR_listenHandler函数处理新连接，其内部将task_listen函数添加进工作队列，使用线程池中的工作线程处理。task_listen函数接收新连接，并将其添加进epoll函数监听。</p>
+<h3 id="处理已连接事件IO"><a href="#处理已连接事件IO" class="headerlink" title="处理已连接事件IO"></a>处理已连接事件IO</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">WriteRead::WR_cfdHandler</span><span class="params">(<span class="type">int</span> index)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">pthread_mutex_lock</span>(&amp;task_lock);</span><br><span class="line">    task_arg.buf = buf;</span><br><span class="line">    task_arg.sockfd = ep[index].data.fd;</span><br><span class="line">    <span class="function">Task <span class="title">TT</span><span class="params">(task_cfd, &amp;task_arg)</span></span>;</span><br><span class="line">    (*ThrPl).<span class="built_in">addTask</span>(TT);</span><br><span class="line">    <span class="built_in">pthread_mutex_unlock</span>(&amp;task_lock);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">task_cfd</span><span class="params">(<span class="type">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">pthread_rwlock_rdlock</span>(&amp;shutdown_lock);</span><br><span class="line">    <span class="built_in">pthread_mutex_lock</span>(&amp;task_lock);</span><br><span class="line">    <span class="function">Task_putget <span class="title">task_pg</span><span class="params">((<span class="keyword">struct</span> pack_taskconnect *)arg)</span></span>;</span><br><span class="line">    <span class="built_in">pthread_mutex_unlock</span>(&amp;task_lock);</span><br><span class="line">    <span class="type">ssize_t</span> n = task_pg.<span class="built_in">read_fromclient</span>();</span><br><span class="line">    <span class="keyword">if</span>(n==<span class="number">0</span>)</span><br><span class="line">        task_pg.<span class="built_in">closeconnect</span>();</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(n&gt;<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">const</span> <span class="type">int</span> infotype = task_pg.<span class="built_in">is_infotype</span>();</span><br><span class="line">        <span class="keyword">if</span>(infotype==KEY_VALUE_REQUEST)</span><br><span class="line">            task_pg.<span class="built_in">kvrequest_handler</span>();</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(infotype==KEY_VALUE_RESPOND||infotype==KEY_VALUE_RESPONDBK)</span><br><span class="line">            task_pg.<span class="built_in">kvrespond_handler</span>();</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(infotype==REFLESH_MASTER)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">pthread_mutex_lock</span>(&amp;reflesh_master_lock);</span><br><span class="line">            master_addr = task_pg.<span class="built_in">refleshmaster</span>();</span><br><span class="line">            <span class="built_in">pthread_mutex_unlock</span>(&amp;reflesh_master_lock);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">pthread_rwlock_unlock</span>(&amp;shutdown_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当epoll函数返回的是已建立连接的套接字时，代表有IO请求发生，此时将task_cfd函数添加进线程池的工作队列中。task_cfd内部首先调用read_fromclient函数读取套接字中的json数据包，如果数据为空，则使用closeconnect函数关闭套接字；如果json数据包类型为KEY_VALUE_RESQUEST，则调用kvrequest_handler函数处理client的读数据请求；当类型为KEY_VALUE_RESPOND或KEY_VALUE_RESPONDBK时，调用kvrespond_handler函数处理client或cache server的写数据请求；如果类型为REFLESH_MASTER，则更新master的IP地址和端口号。</p>
+<h3 id="cache读数据"><a href="#cache读数据" class="headerlink" title="cache读数据"></a>cache读数据</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Task_putget::kvrequest_handler</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">pthread_rwlock_rdlock</span>(&amp;rw_lock);</span><br><span class="line">    info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;value&quot;</span>] = (*LC).<span class="built_in">get</span>(info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;key&quot;</span>]);</span><br><span class="line">    <span class="keyword">if</span>(info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;value&quot;</span>]==<span class="string">&quot;&quot;</span>)</span><br><span class="line">        info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;flag&quot;</span>] = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;flag&quot;</span>] = <span class="literal">true</span>;</span><br><span class="line">    string str_out = info.<span class="built_in">dump</span>()+<span class="string">&quot;\0&quot;</span>;</span><br><span class="line">    <span class="built_in">Write</span>(sockfd, (<span class="type">char</span> *)str_out.<span class="built_in">data</span>(), str_out.<span class="built_in">length</span>()+<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">pthread_rwlock_unlock</span>(&amp;rw_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>cache处理读数据请求的函数，当读取成功时，将flag标志置1，否则置0。</p>
+<h3 id="cache写数据"><a href="#cache写数据" class="headerlink" title="cache写数据"></a>cache写数据</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">Task_putget::kvrespond_handler</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">pthread_rwlock_wrlock</span>(&amp;rw_lock);</span><br><span class="line">    <span class="keyword">if</span>(info[<span class="string">&quot;type&quot;</span>]==KEY_VALUE_RESPONDBK)</span><br><span class="line">    &#123;</span><br><span class="line">        cout&lt;&lt;<span class="string">&quot;the number of receiving backup data is &quot;</span>&lt;&lt;++rcv_bk&lt;&lt;endl;</span><br><span class="line">        (*LC_BK).<span class="built_in">put</span>(info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;key&quot;</span>], info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;value&quot;</span>]);</span><br><span class="line">        <span class="built_in">pthread_rwlock_unlock</span>(&amp;rw_lock);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;the number of receiving stored data is &quot;</span>&lt;&lt;++rcv_cli&lt;&lt;endl;</span><br><span class="line">    (*LC).<span class="built_in">put</span>(info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;key&quot;</span>], info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;value&quot;</span>]);</span><br><span class="line"></span><br><span class="line">    string addr = key_addr-&gt;<span class="built_in">GetBackUpServer</span>(info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;key&quot;</span>]);</span><br><span class="line">    <span class="keyword">if</span>(!addr.<span class="built_in">empty</span>() &amp;&amp; addr!=curen_addr)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">auto</span> ipport_s = <span class="built_in">get_ipport</span>(addr);</span><br><span class="line">        string&amp; ip = ipport_s.ip;</span><br><span class="line">        <span class="type">int</span>&amp; port = ipport_s.port;</span><br><span class="line">        <span class="type">int</span> cachfd = <span class="built_in">Socket</span>(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> cache_bk_addr;</span><br><span class="line">        <span class="built_in">bzero</span>(&amp;cache_bk_addr,<span class="built_in">sizeof</span>(cache_bk_addr));</span><br><span class="line">        cache_bk_addr.sin_family = AF_INET;</span><br><span class="line">        <span class="built_in">inet_pton</span>(AF_INET, (<span class="type">const</span> <span class="type">char</span>*)ip.<span class="built_in">data</span>(), &amp;cache_bk_addr.sin_addr.s_addr);</span><br><span class="line">        cache_bk_addr.sin_port = <span class="built_in">htons</span>(port);</span><br><span class="line">        <span class="keyword">if</span>(!(<span class="built_in">connect</span>(cachfd, (<span class="keyword">struct</span> sockaddr *)&amp;cache_bk_addr, <span class="built_in">sizeof</span>(cache_bk_addr))&lt;<span class="number">0</span>))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">auto</span> flags = <span class="built_in">fcntl</span>(cachfd,F_GETFL,<span class="number">0</span>);</span><br><span class="line">            <span class="built_in">fcntl</span>(cachfd,F_SETFL,flags|O_NONBLOCK);</span><br><span class="line">            json sout_data = <span class="built_in">Write_bk_ClientCache</span>((<span class="type">const</span> string)info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;key&quot;</span>], (<span class="type">const</span> string)info[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;value&quot;</span>]);</span><br><span class="line">            string s_data = sout_data.<span class="built_in">dump</span>()+<span class="string">&quot;\0&quot;</span>;</span><br><span class="line">            <span class="built_in">Write</span>(cachfd, (<span class="type">char</span> *)s_data.<span class="built_in">data</span>(), s_data.<span class="built_in">length</span>()+<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">Close</span>(cachfd);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">pthread_rwlock_unlock</span>(&amp;rw_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>cache处理写函数请求的函数。如果类型为KEY_VALUE_RESPONDBK，则将数据写入备份LRU中；如果类型为KEY_VALUE_RESPOND，则将数据写入LRU中，同时找到该key对应的备份cache server服务器，向其发送类型为KEY_VALUE_RESPONDBK的json数据包。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%AD%A6%E4%B9%A0%E6%97%A5%E5%BF%97/" rel="tag"># 学习日志</a>
+              <a href="/tags/cache/" rel="tag"># cache</a>
+              <a href="/tags/%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/" rel="tag"># 数据读写</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/06/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/" rel="prev" title="一致性哈希">
+      <i class="fa fa-chevron-left"></i> 一致性哈希
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85/" rel="next" title="cache模块——心跳包">
+      cache模块——心跳包 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">整体概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll%E5%87%BD%E6%95%B0"><span class="nav-number">2.1.</span> <span class="nav-text">epoll函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%AF%B7%E6%B1%82"><span class="nav-number">2.2.</span> <span class="nav-text">客户端请求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="nav-number">3.</span> <span class="nav-text">核心代码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8Bmaster%E8%BF%9E%E6%8E%A5"><span class="nav-number">3.1.</span> <span class="nav-text">建立master连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E6%96%B0%E8%BF%9E%E6%8E%A5%E8%AF%B7%E6%B1%82"><span class="nav-number">3.2.</span> <span class="nav-text">处理新连接请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E5%B7%B2%E8%BF%9E%E6%8E%A5%E4%BA%8B%E4%BB%B6IO"><span class="nav-number">3.3.</span> <span class="nav-text">处理已连接事件IO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cache%E8%AF%BB%E6%95%B0%E6%8D%AE"><span class="nav-number">3.4.</span> <span class="nav-text">cache读数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cache%E5%86%99%E6%95%B0%E6%8D%AE"><span class="nav-number">3.5.</span> <span class="nav-text">cache写数据</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gong luyang"
+      src="/images/%E5%A4%B4%E5%83%8F.png">
+  <p class="site-author-name" itemprop="name">gong luyang</p>
+  <div class="site-description" itemprop="description">learn</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/glyhust" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;glyhust" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gly_hk@163.com" title="E-Mail → mailto:gly_hk@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gong luyang</span>
+</div>
+
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  <div class="bg_content">
+  <canvas id="canvas"></canvas>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
+
+<script type="text/javascript" src="/js/dynamic_bg.js"></script>
