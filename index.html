@@ -132,6 +132,16 @@
     <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
 
   </li>
+        <li class="menu-item menu-item-webserver">
+
+    <a href="/categories/webserver" rel="section"><i class="fa fa-server fa-fw"></i>WebServer</a>
+
+  </li>
+        <li class="menu-item menu-item-分布式缓存">
+
+    <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98" rel="section"><i class="fa fa-cubes fa-fw"></i>分布式缓存</a>
+
+  </li>
       <li class="menu-item menu-item-search">
         <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
         </a>
@@ -182,92 +192,13 @@
 
           <div class="content index posts-expand">
             
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/20/master%E6%A8%A1%E5%9D%97/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/05/20/master%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">master模块</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-05-20 18:01:21" itemprop="dateCreated datePublished" datetime="2022-05-20T18:01:21+08:00">2022-05-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 13:58:33" itemprop="dateModified" datetime="2022-05-29T13:58:33+08:00">2022-05-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
     
     
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>master模块是分布式缓存系统的管理中心，需要同时与多个client和cache server交互，并且根据接收到的数据进行不同的逻辑处理。在master主函数中，新建多个线程分别处理不同的业务：接收来自cache server的心跳包和client的指令，并做出相应处理；检测cache心跳包计数是否持续增加；向从master定时发送心跳包。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/XKcfHI"><img src="https://s1.ax1x.com/2022/05/28/XKcfHI.png" alt="master模块"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/20/master%E6%A8%A1%E5%9D%97/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/16/client%E6%A8%A1%E5%9D%97/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/20/%E9%A6%96%E9%A1%B5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
@@ -281,7 +212,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/05/16/client%E6%A8%A1%E5%9D%97/" class="post-title-link" itemprop="url">client模块</a>
+            <a href="/2022/05/20/%E9%A6%96%E9%A1%B5/" class="post-title-link" itemprop="url">未命名</a>
         </h2>
 
         <div class="post-meta">
@@ -291,24 +222,15 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2022-05-16 18:01:21" itemprop="dateCreated datePublished" datetime="2022-05-16T18:01:21+08:00">2022-05-16</time>
+              <time title="创建时间：2022-05-20 13:01:21" itemprop="dateCreated datePublished" datetime="2022-05-20T13:01:21+08:00">2022-05-20</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 13:58:29" itemprop="dateModified" datetime="2022-05-29T13:58:29+08:00">2022-05-29</time>
+                <time title="修改时间：2022-05-29 17:30:39" itemprop="dateModified" datetime="2022-05-29T17:30:39+08:00">2022-05-29</time>
               </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
-                </span>
-            </span>
 
           
 
@@ -321,507 +243,35 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>client需要与master和cache server之间交互，其中与master的交互是需要请求cache server列表来更新本地的cache serve列表，与cache server的交互则主要有两个功能：一是随机产生key和对应的value，发送给cache server；二是根据key向对应的cache server请求其相应的value数据。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/XuelEF"><img src="https://s1.ax1x.com/2022/05/28/XuelEF.png" alt="client"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/16/client%E6%A8%A1%E5%9D%97/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85/" class="post-title-link" itemprop="url">cache模块——心跳包</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-05-12 18:01:21" itemprop="dateCreated datePublished" datetime="2022-05-12T18:01:21+08:00">2022-05-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 13:58:24" itemprop="dateModified" datetime="2022-05-29T13:58:24+08:00">2022-05-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>cache server在运行时，新建一个线程定时向master发送心跳包，以确保master能确定自己的存活状态，同时接收master发送的指令，根据指令不同进行对应的操作。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/Xn2JQH"><img src="https://s1.ax1x.com/2022/05/28/Xn2JQH.png" alt="cache-心跳包"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/" class="post-title-link" itemprop="url">cache模块——数据读写</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-05-10 18:01:21" itemprop="dateCreated datePublished" datetime="2022-05-10T18:01:21+08:00">2022-05-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 13:58:19" itemprop="dateModified" datetime="2022-05-29T13:58:19+08:00">2022-05-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>cache server是一个可以同时向多个client提供服务的服务器，其并发能力至关重要，所以采用epoll和线程池架构来提高cache server服务器的并发处理能力，即通过epoll函数监听多个事件，并让对应的处理函数交于线程池中的工作线程处理。同时还需要处理master容灾时备份master发送过来的IP和端口号信息。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/XnXmCQ"><img src="https://s1.ax1x.com/2022/05/28/XnXmCQ.png" alt="cache-数据读写"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/06/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/05/06/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/" class="post-title-link" itemprop="url">一致性哈希</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-05-06 18:01:21" itemprop="dateCreated datePublished" datetime="2022-05-06T18:01:21+08:00">2022-05-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 13:57:23" itemprop="dateModified" datetime="2022-05-29T13:57:23+08:00">2022-05-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>对于一个分布式key-value型缓存系统，某个key应该到哪个或者哪些节点上获得，应该是确定的。哈希算法可以保证对同一个关键字进行哈希计算，每次计算都是相同的值，这样就可以将某个key确定到一个节点上，但是如果节点数量发生了变化，也就是在对系统做扩容或者缩容时，必须迁移改变了映射关系的数据。然而哈希算法在面对节点数量变化时，最坏情况下所有数据都需要迁移，成本高。因此需要采用一致性哈希算法，与哈希算法的不同之处在于，哈希算法是对节点的数量进行取模计算，而一致性哈希算法是对2^32进行取模运算。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/XmwHTH"><img src="https://s1.ax1x.com/2022/05/27/XmwHTH.png" alt="哈希环"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/06/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/05/%E9%80%9A%E4%BF%A1%E6%A0%BC%E5%BC%8F%E5%8F%8A%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/05/05/%E9%80%9A%E4%BF%A1%E6%A0%BC%E5%BC%8F%E5%8F%8A%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">通信格式及辅助函数</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-05-05 12:01:21" itemprop="dateCreated datePublished" datetime="2022-05-05T12:01:21+08:00">2022-05-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 14:02:45" itemprop="dateModified" datetime="2022-05-29T14:02:45+08:00">2022-05-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>采用JSON格式作为master、cache server和client之间的通行数据格式，借助德国大牛nlohmann写的json for modern C++，只需要包含头文件json.hpp，再using json &#x3D; nlohmann::json;就可以直接使用。同时封装了需要在项目中多次使用的函数。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/05/%E9%80%9A%E4%BF%A1%E6%A0%BC%E5%BC%8F%E5%8F%8A%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/03/%E7%BC%93%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5-LRU/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/05/03/%E7%BC%93%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5-LRU/" class="post-title-link" itemprop="url">缓存淘汰-LRU</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-05-03 13:01:21" itemprop="dateCreated datePublished" datetime="2022-05-03T13:01:21+08:00">2022-05-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 14:04:04" itemprop="dateModified" datetime="2022-05-29T14:04:04+08:00">2022-05-29</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98/" itemprop="url" rel="index"><span itemprop="name">分布式缓存</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>缓存一般从以下三个特征进行描述：命中率、最大空间、淘汰策略。缓存的存储空间有限制，当缓存空间被用满时，有淘汰策略来保证可靠的命中率。本项目采用LRU（least recently used）策略，它是目前最常用的缓存算法和设计方案之一，其移除策略为“当缓存（页）满时，优先移除最近最久未使用的数据”，优点是易于设计和使用，适用场景广泛。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/XmzeBt"><img src="https://s1.ax1x.com/2022/05/27/XmzeBt.png" alt="LRU"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/05/03/%E7%BC%93%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5-LRU/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/03/24/WebServer%E7%B1%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/24/WebServer%E7%B1%BB/" class="post-title-link" itemprop="url">WebServer类</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-03-24 09:24:34" itemprop="dateCreated datePublished" datetime="2022-03-24T09:24:34+08:00">2022-03-24</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-08 12:57:19" itemprop="dateModified" datetime="2022-05-08T12:57:19+08:00">2022-05-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>基于浏览器&#x2F;服务器（B&#x2F;S）模型，实现了Web服务器的基本功能，用户通过浏览器实现，一部分事务逻辑在浏览器实现，主要事务逻辑在服务端实现，主要可以分为三层架构：</p>
-<ul>
-<li>表示层：web浏览器。位于客户端，其任务是通过web浏览器向网络上的某个web服务器提出服务请求</li>
-<li>功能层：具有应用程序扩展功能的web服务器，负责事物逻辑处理，位于web服务器端，其任务是接受用户的请求，进行数据库连接</li>
-<li>数据层：数据库服务器。负责数据处理逻辑，位于数据库服务器端，其任务是接受web服务器对数据库 的操纵请求，实现对数据库查询、修改、更新等功能</li>
+          <h2 id="分布式缓存项目"><a href="#分布式缓存项目" class="headerlink" title="分布式缓存项目"></a>分布式缓存项目</h2><p>实现基于C++的分布式缓存系统，设计了多Master、多Cache Server以及若干Client并存的分布式缓存架构，能够具有基础的数据读写、分布获取、状态上报功能，同时具备容灾能力。</p>
+<h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><ul>
+<li>单个Cache server采用LRU机制保存指定数量的key，并主动淘汰多余的key，同时使用基于epoll和线程池的架构高并发地进行数据收发。</li>
+<li>Cache server使用一致哈希算法实现负载均衡，并且会定时向Master发送心跳包以通知自身存活情况。</li>
+<li>Master检测到新的Cache server接入时，向所有其它服务器发送扩容指令和新的节点分布列表，各服务器接到指令后通过一致哈希算法将数据转移到新的Cache server。</li>
+<li>Master发送缩容指令和新的节点分布列表，接到指定的服务器通过一致哈希算法将数据转移到其它Cache server，最后自动关闭。</li>
+<li>Master检测到某个Cache server没有发送心跳包后，向其它节点发送节点更新指令和新的节点分布列表，其它服务器收到指令后将所有备份数据通过一致哈希算法转移到其各自新的对应Cache server上。</li>
+<li>Client能生成随机数据并写入Cache server，或者根据key向其对应的Cache server服务器请求value值，当请求超时时，向Master端请求最新的节点分布。Cache server收到数据后会将数据发送到备份Cache server上进行备份处理。</li>
+<li>主Master向从Master定时发送心跳包，当从Master检测到主Master停止工作时，会主动通知所有Cache server节点连接到新的Master，接替工作。</li>
 </ul>
-<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/OQMG6K"><img src="https://s1.ax1x.com/2022/05/07/OQMG6K.png" alt="服务器类"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/03/24/WebServer%E7%B1%BB/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
+<h2 id="WebServer项目"><a href="#WebServer项目" class="headerlink" title="WebServer项目"></a>WebServer项目</h2><p>使用C++语言在Linux环境下搭建<a target="_blank" rel="noopener" href="https://github.com/glyhust/GlyWebServer">轻量级Web服务器</a></p>
+<h3 id="功能-1"><a href="#功能-1" class="headerlink" title="功能"></a>功能</h3><ul>
+<li>结合线程池、socket套接字、epoll函数实现多线程的并发模型，通过标志位切换LT&#x2F;ET模式、Reactor&#x2F;模拟Proactor模式</li>
+<li>结合主状态机、从状态机解析HTTP请求报文，可以处理GET和POST请求，返回服务器图片、视频资源</li>
+<li>使用服务器内部数据库保存用户名、登录密码，实现用户通过浏览器进行注册、登录功能</li>
+<li>基于有序链表实现定时器，关闭超时的非活跃连接</li>
+<li>结合单例模式和阻塞队列实现异步写日志模式，记录服务器的运行状态</li>
+</ul>
+<h3 id="博客导航"><a href="#博客导航" class="headerlink" title="博客导航"></a>博客导航</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/01/main%E4%B8%BB%E5%87%BD%E6%95%B0/">main主函数</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/02/%E8%87%AA%E5%B0%81%E8%A3%85%E9%94%81/">自封装锁</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/05/%E7%BA%BF%E7%A8%8B%E6%B1%A0/">线程池</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/10/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0/">数据库连接池</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/11/%E6%97%A5%E5%BF%97/">日志系统</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/15/%E5%AE%9A%E6%97%B6%E5%99%A8/">定时器</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/20/http%E5%A4%84%E7%90%86%E7%B1%BB/">http处理类</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/24/WebServer%E7%B1%BB/">WebServer类</a></li>
+</ul>
+
       
     </div>
 
@@ -836,168 +286,15 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/03/20/http%E5%A4%84%E7%90%86%E7%B1%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/20/http%E5%A4%84%E7%90%86%E7%B1%BB/" class="post-title-link" itemprop="url">http处理类</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-03-20 14:12:14" itemprop="dateCreated datePublished" datetime="2022-03-20T14:12:14+08:00">2022-03-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-08 11:44:15" itemprop="dateModified" datetime="2022-05-08T11:44:15+08:00">2022-05-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
     
     
     
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>浏览器端发出http连接请求，主线程创建http对象接收请求并将所有数据读入对应buffer，将该对象插入任务队列，工作线程从任务队列中取出一个任务进行处理。工作线程取出任务后，调用process_read函数，通过主、从状态机对请求报文进行解析。解析完之后，跳转do_request函数生成响应报文，通过process_write写入buffer，返回给浏览器端。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/OQV1rd"><img src="https://s1.ax1x.com/2022/05/07/OQV1rd.png" alt="http类"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/03/20/http%E5%A4%84%E7%90%86%E7%B1%BB/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
     
     
     
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/03/15/%E5%AE%9A%E6%97%B6%E5%99%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/%E5%A4%B4%E5%83%8F.png">
-      <meta itemprop="name" content="gong luyang">
-      <meta itemprop="description" content="learn">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="gly的学习博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/15/%E5%AE%9A%E6%97%B6%E5%99%A8/" class="post-title-link" itemprop="url">定时器</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-03-15 11:45:35" itemprop="dateCreated datePublished" datetime="2022-03-15T11:45:35+08:00">2022-03-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-07 22:23:36" itemprop="dateModified" datetime="2022-05-07T22:23:36+08:00">2022-05-07</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/webserver/" itemprop="url" rel="index"><span itemprop="name">webserver</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
     
     
     
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="整体概述"><a href="#整体概述" class="headerlink" title="整体概述"></a>整体概述</h2><p>服务器主循环为每一个连接创建一个定时器，并对每个连接进行定时，利用升序时间链表容器将所有定时器串联起来，若主循环接收到定时通知，则在链表中依次执行定时任务。本项目利用alarm函数周期性触发SIGALRM信号，信号处理函数利用管道通知主循环，主循环接受到该信号后对升序链表上所有定时器进行处理。若该段时间内没有交换出具，则将该连接关闭，释放所占用的资源。<br><a target="_blank" rel="noopener" href="https://imgtu.com/i/OMytEj"><img src="https://s1.ax1x.com/2022/05/07/OMytEj.png" alt="定时器"></a></p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/03/15/%E5%AE%9A%E6%97%B6%E5%99%A8/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1069,7 +366,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">16</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
