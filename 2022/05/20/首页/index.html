@@ -22,13 +22,13 @@
 
   <meta name="description" content="分布式缓存项目实现基于C++的分布式缓存系统，设计了多Master、多Cache Server以及若干Client并存的分布式缓存架构，能够具有基础的数据读写、分布获取、状态上报功能，同时具备容灾能力。 功能 单个Cache server采用LRU机制保存指定数量的key，并主动淘汰多余的key，同时使用基于epoll和线程池的架构高并发地进行数据收发。 Cache server使用一致哈希算法实">
 <meta property="og:type" content="article">
-<meta property="og:title" content="gly的学习博客">
+<meta property="og:title" content="学习博客">
 <meta property="og:url" content="http://example.com/2022/05/20/%E9%A6%96%E9%A1%B5/index.html">
 <meta property="og:site_name" content="gly的学习博客">
 <meta property="og:description" content="分布式缓存项目实现基于C++的分布式缓存系统，设计了多Master、多Cache Server以及若干Client并存的分布式缓存架构，能够具有基础的数据读写、分布获取、状态上报功能，同时具备容灾能力。 功能 单个Cache server采用LRU机制保存指定数量的key，并主动淘汰多余的key，同时使用基于epoll和线程池的架构高并发地进行数据收发。 Cache server使用一致哈希算法实">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-05-20T05:01:21.000Z">
-<meta property="article:modified_time" content="2022-05-29T09:30:39.086Z">
+<meta property="article:modified_time" content="2022-05-29T09:46:20.555Z">
 <meta property="article:author" content="gong luyang">
 <meta name="twitter:card" content="summary">
 
@@ -45,7 +45,7 @@
   };
 </script>
 
-  <title> | gly的学习博客</title>
+  <title>学习博客 | gly的学习博客</title>
   
 
 
@@ -212,7 +212,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
+          学习博客
         </h1>
 
         <div class="post-meta">
@@ -229,7 +229,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-29 17:30:39" itemprop="dateModified" datetime="2022-05-29T17:30:39+08:00">2022-05-29</time>
+                <time title="修改时间：2022-05-29 17:46:20" itemprop="dateModified" datetime="2022-05-29T17:46:20+08:00">2022-05-29</time>
               </span>
 
           
@@ -243,7 +243,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="分布式缓存项目"><a href="#分布式缓存项目" class="headerlink" title="分布式缓存项目"></a>分布式缓存项目</h2><p>实现基于C++的分布式缓存系统，设计了多Master、多Cache Server以及若干Client并存的分布式缓存架构，能够具有基础的数据读写、分布获取、状态上报功能，同时具备容灾能力。</p>
+        <h1 id="分布式缓存项目"><a href="#分布式缓存项目" class="headerlink" title="分布式缓存项目"></a>分布式缓存项目</h1><p>实现基于C++的<a target="_blank" rel="noopener" href="https://github.com/glyhust/Tiny-Distributed-cache">分布式缓存系统</a>，设计了多Master、多Cache Server以及若干Client并存的分布式缓存架构，能够具有基础的数据读写、分布获取、状态上报功能，同时具备容灾能力。</p>
 <h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><ul>
 <li>单个Cache server采用LRU机制保存指定数量的key，并主动淘汰多余的key，同时使用基于epoll和线程池的架构高并发地进行数据收发。</li>
 <li>Cache server使用一致哈希算法实现负载均衡，并且会定时向Master发送心跳包以通知自身存活情况。</li>
@@ -253,15 +253,21 @@
 <li>Client能生成随机数据并写入Cache server，或者根据key向其对应的Cache server服务器请求value值，当请求超时时，向Master端请求最新的节点分布。Cache server收到数据后会将数据发送到备份Cache server上进行备份处理。</li>
 <li>主Master向从Master定时发送心跳包，当从Master检测到主Master停止工作时，会主动通知所有Cache server节点连接到新的Master，接替工作。</li>
 </ul>
-<h2 id="WebServer项目"><a href="#WebServer项目" class="headerlink" title="WebServer项目"></a>WebServer项目</h2><p>使用C++语言在Linux环境下搭建<a target="_blank" rel="noopener" href="https://github.com/glyhust/GlyWebServer">轻量级Web服务器</a></p>
-<h3 id="功能-1"><a href="#功能-1" class="headerlink" title="功能"></a>功能</h3><ul>
+<h3 id="博客导航"><a href="#博客导航" class="headerlink" title="博客导航"></a>博客导航</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/03/%E7%BC%93%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5-LRU/">缓存淘汰策略-LRU</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/05/%E9%80%9A%E4%BF%A1%E6%A0%BC%E5%BC%8F%E5%8F%8A%E8%BE%85%E5%8A%A9%E5%87%BD%E6%95%B0/">通信格式及辅助函数</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/06/%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C/">一致性哈希</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/10/cache%E6%A8%A1%E5%9D%97%E2%80%94%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99">cache模块—数据读写</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/12/cache%E6%A8%A1%E5%9D%97%E2%80%94%E5%BF%83%E8%B7%B3%E5%8C%85">cache模块—心跳包</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/16/client%E6%A8%A1%E5%9D%97/">client模块</a></li>
+<li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/05/20/master%E6%A8%A1%E5%9D%97/">master模块</a><h1 id="WebServer项目"><a href="#WebServer项目" class="headerlink" title="WebServer项目"></a>WebServer项目</h1>使用C++语言在Linux环境下搭建<a target="_blank" rel="noopener" href="https://github.com/glyhust/GlyWebServer">轻量级Web服务器</a><h3 id="功能-1"><a href="#功能-1" class="headerlink" title="功能"></a>功能</h3></li>
 <li>结合线程池、socket套接字、epoll函数实现多线程的并发模型，通过标志位切换LT&#x2F;ET模式、Reactor&#x2F;模拟Proactor模式</li>
 <li>结合主状态机、从状态机解析HTTP请求报文，可以处理GET和POST请求，返回服务器图片、视频资源</li>
 <li>使用服务器内部数据库保存用户名、登录密码，实现用户通过浏览器进行注册、登录功能</li>
 <li>基于有序链表实现定时器，关闭超时的非活跃连接</li>
 <li>结合单例模式和阻塞队列实现异步写日志模式，记录服务器的运行状态</li>
 </ul>
-<h3 id="博客导航"><a href="#博客导航" class="headerlink" title="博客导航"></a>博客导航</h3><ul>
+<h3 id="博客导航-1"><a href="#博客导航-1" class="headerlink" title="博客导航"></a>博客导航</h3><ul>
 <li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/01/main%E4%B8%BB%E5%87%BD%E6%95%B0/">main主函数</a></li>
 <li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/02/%E8%87%AA%E5%B0%81%E8%A3%85%E9%94%81/">自封装锁</a></li>
 <li><a target="_blank" rel="noopener" href="https://glyhust.github.io/2022/03/05/%E7%BA%BF%E7%A8%8B%E6%B1%A0/">线程池</a></li>
@@ -351,7 +357,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">分布式缓存项目</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">1.1.</span> <span class="nav-text">功能</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WebServer%E9%A1%B9%E7%9B%AE"><span class="nav-number">2.</span> <span class="nav-text">WebServer项目</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD-1"><span class="nav-number">2.1.</span> <span class="nav-text">功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%9A%E5%AE%A2%E5%AF%BC%E8%88%AA"><span class="nav-number">2.2.</span> <span class="nav-text">博客导航</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%BC%93%E5%AD%98%E9%A1%B9%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">分布式缓存项目</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">1.0.1.</span> <span class="nav-text">功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%9A%E5%AE%A2%E5%AF%BC%E8%88%AA"><span class="nav-number">1.0.2.</span> <span class="nav-text">博客导航</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#WebServer%E9%A1%B9%E7%9B%AE"><span class="nav-number">2.</span> <span class="nav-text">WebServer项目</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD-1"><span class="nav-number">2.0.1.</span> <span class="nav-text">功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%9A%E5%AE%A2%E5%AF%BC%E8%88%AA-1"><span class="nav-number">2.0.2.</span> <span class="nav-text">博客导航</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
